@@ -16,13 +16,14 @@ const ALLOWED_GEMINI_MODELS = new Set([
 	"gemini-2.5-flash-image",
 	"gemini-3.1-flash-image-preview",
 ]);
-const LITELLM_IMAGE_MODELS = {
-	generation: new Set([
+const OPENAI_IMAGE_MODELS = {
+	generation: new Set(["gpt-image-1.5", "FLUX-1.1-pro", "FLUX.2-pro"]),
+	edit: new Set([
 		"gpt-image-1.5",
-		"azure_ai/FLUX-1.1-pro",
-		"azure_ai/FLUX.2-pro",
+		"FLUX.2-pro",
+		"FLUX.1-Kontext-pro-edit",
+		"FLUX.2-pro-edit",
 	]),
-	edit: new Set(["gpt-image-1.5", "azure_ai/FLUX.1-Kontext-pro"]),
 };
 
 function getSessionSecret(): string {
@@ -194,11 +195,11 @@ export function assertAllowedGeminiModel(model: string): void {
 	}
 }
 
-export function assertAllowedLiteLLMModel(
+export function assertAllowedOpenAIImageModel(
 	model: string,
-	operation: keyof typeof LITELLM_IMAGE_MODELS,
+	operation: keyof typeof OPENAI_IMAGE_MODELS,
 ): void {
-	if (!LITELLM_IMAGE_MODELS[operation].has(model)) {
+	if (!OPENAI_IMAGE_MODELS[operation].has(model)) {
 		throw Object.assign(
 			new Error(`Model is not available for image ${operation}: ${model}`),
 			{ status: 400 },

@@ -3,7 +3,7 @@ import { Wand2, Loader2 } from "lucide-react";
 import {
 	imageModelsFor,
 	type ImageOperation,
-	type LiteLLMImageModel,
+	type OpenAIImageModel,
 } from "../../services/imageModels.ts";
 
 interface TransformationPanelProps {
@@ -12,8 +12,8 @@ interface TransformationPanelProps {
 	placeholder?: string;
 	isMaskMode?: boolean;
 	language?: "en" | "de";
-	imageModel: LiteLLMImageModel;
-	onImageModelChange: (model: LiteLLMImageModel) => void;
+	imageModel: OpenAIImageModel;
+	onImageModelChange: (model: OpenAIImageModel) => void;
 }
 
 const SUGGESTIONS_EN = [
@@ -137,7 +137,7 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 								: models[0]?.id
 						}
 						onChange={(event) =>
-							onImageModelChange(event.target.value as LiteLLMImageModel)
+							onImageModelChange(event.target.value as OpenAIImageModel)
 						}
 						disabled={isProcessing || models.length < 2}
 						className="w-full h-10 bg-gray-50 border-2 border-eb-900 px-2 text-sm font-bold disabled:opacity-70"

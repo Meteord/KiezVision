@@ -4,7 +4,7 @@ import type { ContentStrings } from "../../content.ts";
 import type { Language } from "../../content.ts";
 import type { EditMode, InpaintCanvasHandle } from "../../hooks/use-editor.ts";
 import type { GeneratedImage, ProcessingState } from "../../types.ts";
-import type { LiteLLMImageModel } from "../../services/imageModels.ts";
+import type { OpenAIImageModel } from "../../services/imageModels.ts";
 import { BeforeAfterSlider } from "./before-after-slider.tsx";
 import { EditorSourceOverlay } from "./editor-source-overlay.tsx";
 import { InpaintCanvas } from "./inpaint-canvas.tsx";
@@ -38,8 +38,8 @@ export interface EditorViewProps {
 	onSetEraser: () => void;
 	onClearHistory: () => void;
 	onReopenImageryPicker: () => void;
-	imageModel: LiteLLMImageModel;
-	onImageModelChange: (model: LiteLLMImageModel) => void;
+	imageModel: OpenAIImageModel;
+	onImageModelChange: (model: OpenAIImageModel) => void;
 }
 
 export const EditorView: React.FC<EditorViewProps> = ({

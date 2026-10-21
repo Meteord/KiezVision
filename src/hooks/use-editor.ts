@@ -18,7 +18,10 @@ import { buildTransformPrompt } from "../services/presetRules.ts";
 import { runAreaEdit } from "../areaEdit/index.ts";
 import { toDisplayableDataUrl } from "../services/imageUtils.ts";
 import type { GeneratedImage, ProcessingState } from "../types.ts";
-import type { LiteLLMImageModel } from "../services/imageModels.ts";
+import {
+	imageModelsFor,
+	type OpenAIImageModel,
+} from "../services/imageModels.ts";
 
 export type EditMode = "comparison" | "mask";
 
@@ -88,11 +91,19 @@ async function runMaskedAreaEdit(options: {
 	maskForRun: string;
 	prompt: string;
 	highQuality: boolean;
+	imageModel: OpenAIImageModel;
 	language: Language;
 	setError: (error: string | null) => void;
 }): Promise<string> {
-	const { imageForRun, maskForRun, prompt, highQuality, language, setError } =
-		options;
+	const {
+		imageForRun,
+		maskForRun,
+		prompt,
+		highQuality,
+		imageModel,
+		language,
+		setError,
+	} = options;
 	try {
 		const areaResult = await runAreaEdit({
 			originalImageUrl: imageForRun,
@@ -100,6 +111,7 @@ async function runMaskedAreaEdit(options: {
 			prompt,
 			options: {
 				highQuality,
+				model: imageModel,
 				modelTemperature: 0.4,
 			},
 		});
@@ -131,8 +143,9 @@ export function useEditor({
 	const [currentImage, setCurrentImage] = useState<string | null>(null);
 	const [history, setHistory] = useState<GeneratedImage[]>([]);
 	const [editMode, setEditMode] = useState<EditMode>("comparison");
-	const [imageModel, setImageModel] =
-		useState<LiteLLMImageModel>("gpt-image-1.5");
+	const [imageModel, setImageModel] = useState<OpenAIImageModel>(
+		"FLUX.1-Kontext-pro-edit",
+	);
 	const [maskBase64, setMaskBase64] = useState<string | null>(null);
 	const [brushSize, setBrushSize] = useState(40);
 	const [inpaintMountKey, setInpaintMountKey] = useState(0);
@@ -338,11 +351,17 @@ export function useEditor({
 
 				let finalImageData: string;
 				if (maskForRun) {
+					const maskModel = imageModelsFor("mask-edit").some(
+						(model) => model.id === imageModel,
+					)
+						? imageModel
+						: "FLUX.1-Kontext-pro-edit";
 					finalImageData = await runMaskedAreaEdit({
 						imageForRun,
 						maskForRun,
 						prompt,
 						highQuality,
+						imageModel: maskModel,
 						language,
 						setError,
 					});

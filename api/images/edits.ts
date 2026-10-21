@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
-	editImageViaLiteLLM,
-	type LiteLLMImageEditBody,
-} from "../../server/litellm.ts";
+	editImageViaOpenAIImagesApi,
+	type OpenAIImageEditBody,
+} from "../../server/openaiImages.ts";
 import { readRawBody, sendError, sendJson } from "../../server/httpHelpers.ts";
 import {
 	assertBodySize,
@@ -26,8 +26,8 @@ export default async function handler(
 		sendJson(
 			res,
 			200,
-			await editImageViaLiteLLM(
-				JSON.parse(raw || "{}") as LiteLLMImageEditBody,
+			await editImageViaOpenAIImagesApi(
+				JSON.parse(raw || "{}") as OpenAIImageEditBody,
 			),
 		);
 	} catch (error) {

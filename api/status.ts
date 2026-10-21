@@ -2,8 +2,8 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { sendError, sendJson } from "../server/httpHelpers.ts";
 import {
 	geminiConfigured,
-	litellmConfigured,
 	mapillaryConfigured,
+	openAIImagesConfigured,
 } from "../server/secrets.ts";
 
 export default function handler(
@@ -22,7 +22,7 @@ export default function handler(
 		}
 		sendJson(res, 200, {
 			gemini: geminiConfigured(),
-			litellm: litellmConfigured(),
+			images: openAIImagesConfigured(),
 			mapillary: mapillaryConfigured(),
 		});
 	} catch (error) {

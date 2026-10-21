@@ -12,6 +12,7 @@ export function createGeminiAreaEditProvider(): AreaEditModelProvider {
 				highQuality: input.highQuality,
 				seed: input.seed,
 				temperature: input.temperature,
+				model: input.model,
 			});
 		},
 	};

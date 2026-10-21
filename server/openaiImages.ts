@@ -1,24 +1,29 @@
-import { assertAllowedLiteLLMModel } from "./requestGuard.ts";
-import { resolveLiteLLMApiKey, resolveLiteLLMBaseUrl } from "./secrets.ts";
+import { Agent } from "undici";
+import { assertAllowedOpenAIImageModel } from "./requestGuard.ts";
+import {
+	resolveLiteLLMApiKey,
+	resolveLiteLLMBaseUrl,
+	resolveLiteLLMInsecureSkipTlsVerify,
+} from "./secrets.ts";
 
-export type LiteLLMImageGenerationBody = {
+export type OpenAIImageGenerationBody = {
 	model: string;
 	prompt: string;
 	size?: string;
 	quality?: string;
 };
 
-export type LiteLLMImageEditBody = LiteLLMImageGenerationBody & {
+export type OpenAIImageEditBody = OpenAIImageGenerationBody & {
 	image: string;
 	mask?: string;
 };
 
-function configuredLiteLLM(): { baseUrl: string; apiKey: string } {
+function configuredOpenAIImagesApi(): { baseUrl: string; apiKey: string } {
 	const baseUrl = resolveLiteLLMBaseUrl();
 	const apiKey = resolveLiteLLMApiKey();
 	if (!baseUrl || !apiKey) {
 		throw Object.assign(
-			new Error("LiteLLM base URL or API key is not configured on the server."),
+			new Error("OpenAI Images API base URL or API key is not configured."),
 			{ status: 503 },
 		);
 	}
@@ -40,12 +45,16 @@ function imageBlob(dataUrl: string, name: string): File {
 	});
 }
 
-async function requestLiteLLM(
+async function requestOpenAIImagesApi(
 	path: string,
 	init: RequestInit,
 ): Promise<unknown> {
-	const { baseUrl, apiKey } = configuredLiteLLM();
+	const { baseUrl, apiKey } = configuredOpenAIImagesApi();
+	const dispatcher = resolveLiteLLMInsecureSkipTlsVerify()
+		? new Agent({ connect: { rejectUnauthorized: false } })
+		: undefined;
 	let response: Response;
+	let body: string;
 	try {
 		response = await fetch(`${baseUrl}${path}`, {
 			...init,
@@ -53,7 +62,9 @@ async function requestLiteLLM(
 				Authorization: `Bearer ${apiKey}`,
 				...init.headers,
 			},
-		});
+			...(dispatcher ? { dispatcher } : {}),
+		} as RequestInit);
+		body = await response.text();
 	} catch (error) {
 		const cause = error instanceof Error ? error.cause : undefined;
 		const code =
@@ -63,7 +74,7 @@ async function requestLiteLLM(
 		if (code === "UNABLE_TO_GET_ISSUER_CERT_LOCALLY") {
 			throw Object.assign(
 				new Error(
-					"LiteLLM's TLS certificate could not be verified. Configure the LiteLLM host with its complete certificate chain, or set NODE_EXTRA_CA_CERTS to your organization's CA PEM before starting the local dev server.",
+					"The OpenAI Images API endpoint's TLS certificate could not be verified. Configure the host with its complete certificate chain, or set NODE_EXTRA_CA_CERTS to your organization's CA PEM before starting the local dev server.",
 				),
 				{ status: 502 },
 			);
@@ -71,13 +82,15 @@ async function requestLiteLLM(
 		throw Object.assign(
 			error instanceof Error
 				? error
-				: new Error("Unable to connect to LiteLLM."),
+				: new Error("Unable to connect to the OpenAI Images API endpoint."),
 			{ status: 502 },
 		);
+	} finally {
+		await dispatcher?.close();
 	}
-	const body = await response.text();
 	if (!response.ok) {
-		let message = body || `LiteLLM request failed (${response.status}).`;
+		let message =
+			body || `OpenAI Images API request failed (${response.status}).`;
 		try {
 			const parsed = JSON.parse(body) as {
 				error?: { message?: string };
@@ -85,7 +98,7 @@ async function requestLiteLLM(
 			};
 			message = parsed.error?.message ?? parsed.message ?? message;
 		} catch {
-			// LiteLLM may return a non-JSON error response.
+			// The upstream endpoint may return a non-JSON error response.
 		}
 		throw Object.assign(new Error(message), { status: response.status });
 	}
@@ -93,7 +106,7 @@ async function requestLiteLLM(
 		return JSON.parse(body) as unknown;
 	} catch {
 		throw Object.assign(
-			new Error("LiteLLM returned an invalid JSON response."),
+			new Error("OpenAI Images API returned an invalid JSON response."),
 			{
 				status: 502,
 			},
@@ -101,31 +114,30 @@ async function requestLiteLLM(
 	}
 }
 
-export async function generateImageViaLiteLLM(
-	body: LiteLLMImageGenerationBody,
+export async function generateImageViaOpenAIImagesApi(
+	body: OpenAIImageGenerationBody,
 ): Promise<unknown> {
 	if (!body?.model || !body.prompt?.trim()) {
 		throw Object.assign(new Error("Request must include model and prompt."), {
 			status: 400,
 		});
 	}
-	assertAllowedLiteLLMModel(body.model, "generation");
-	return requestLiteLLM("/v1/images/generations", {
+	assertAllowedOpenAIImageModel(body.model, "generation");
+	return requestOpenAIImagesApi("/v1/images/generations", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
 			model: body.model,
 			prompt: body.prompt,
 			n: 1,
-			response_format: "b64_json",
 			...(body.size ? { size: body.size } : {}),
 			...(body.quality ? { quality: body.quality } : {}),
 		}),
 	});
 }
 
-export async function editImageViaLiteLLM(
-	body: LiteLLMImageEditBody,
+export async function editImageViaOpenAIImagesApi(
+	body: OpenAIImageEditBody,
 ): Promise<unknown> {
 	if (!body?.model || !body.prompt?.trim() || !body.image) {
 		throw Object.assign(
@@ -135,15 +147,17 @@ export async function editImageViaLiteLLM(
 			},
 		);
 	}
-	assertAllowedLiteLLMModel(body.model, "edit");
+	assertAllowedOpenAIImageModel(body.model, "edit");
 	const form = new FormData();
 	form.set("model", body.model);
 	form.set("prompt", body.prompt);
 	form.set("n", "1");
-	form.set("response_format", "b64_json");
 	form.set("image", imageBlob(body.image, "image.png"));
 	if (body.mask) form.set("mask", imageBlob(body.mask, "mask.png"));
 	if (body.size) form.set("size", body.size);
 	if (body.quality) form.set("quality", body.quality);
-	return requestLiteLLM("/v1/images/edits", { method: "POST", body: form });
+	return requestOpenAIImagesApi("/v1/images/edits", {
+		method: "POST",
+		body: form,
+	});
 }

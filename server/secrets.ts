@@ -22,6 +22,12 @@ export function resolveLiteLLMApiKey(
 	return (env.LITELLM_API_KEY ?? "").trim();
 }
 
+export function resolveLiteLLMInsecureSkipTlsVerify(
+	env: NodeJS.ProcessEnv = process.env,
+): boolean {
+	return env.LITELLM_INSECURE_SKIP_TLS_VERIFY?.trim().toLowerCase() === "true";
+}
+
 export function geminiConfigured(): boolean {
 	return Boolean(resolveGeminiApiKey());
 }
@@ -30,6 +36,6 @@ export function mapillaryConfigured(): boolean {
 	return Boolean(resolveMapillaryAccessToken());
 }
 
-export function litellmConfigured(): boolean {
+export function openAIImagesConfigured(): boolean {
 	return Boolean(resolveLiteLLMBaseUrl() && resolveLiteLLMApiKey());
 }

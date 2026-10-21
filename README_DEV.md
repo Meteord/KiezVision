@@ -40,18 +40,19 @@ Open **http://localhost:3000/** in a Chromium-based browser (Chrome, Edge, Brave
 
 Create `.env.local` from [`.env.example`](.env.example):
 
-| Variable                 | Required    | Description                                                  |
-| ------------------------ | ----------- | ------------------------------------------------------------ |
-| `GEMINI_API_KEY`         | Optional    | Google Gemini API key for location grounding                 |
-| `LITELLM_BASE_URL`       | Yes         | LiteLLM proxy URL, for example `https://litellm.example.com` |
-| `LITELLM_API_KEY`        | Yes         | LiteLLM proxy API key for image generation and editing       |
-| `MAPILLARY_ACCESS_TOKEN` | Recommended | Mapillary Graph API token for real street imagery            |
+| Variable                           | Required    | Description                                                               |
+| ---------------------------------- | ----------- | ------------------------------------------------------------------------- |
+| `GEMINI_API_KEY`                   | Optional    | Google Gemini API key for location grounding                              |
+| `LITELLM_BASE_URL`                 | Yes         | LiteLLM proxy URL, for example `https://litellm.example.com`              |
+| `LITELLM_API_KEY`                  | Yes         | LiteLLM proxy API key for image generation and editing                    |
+| `LITELLM_INSECURE_SKIP_TLS_VERIFY` | Local only  | Set to `true` only to bypass an untrusted LiteLLM TLS certificate locally |
+| `MAPILLARY_ACCESS_TOKEN`           | Recommended | Mapillary Graph API token for real street imagery                         |
 
 If `MAPILLARY_ACCESS_TOKEN` is missing, street search cannot load Mapillary candidates and the app will surface an empty picker or error depending on context.
 
 **Important:** Keys stay on the server (`api/` on Vercel, Vite middleware locally). Do not use a `VITE_` prefix for secrets and do not commit `.env` / `.env.local`.
 
-Configure these LiteLLM model aliases in the proxy: `gpt-image-1.5`, `azure_ai/FLUX-1.1-pro`, `azure_ai/FLUX.1-Kontext-pro`, and `azure_ai/FLUX.2-pro`. The application sends full-image and masked edits to `/v1/images/edits`; it sends new-image generation to `/v1/images/generations`.
+The application uses the [OpenAI Images API](https://docs.litellm.ai/docs/image_edits) contract: full-image and masked edits go to `/v1/images/edits`, while new-image generation goes to `/v1/images/generations`. Configure the proxy with `FLUX.2-pro`, `FLUX.2-pro-edit`, `gpt-image-1.5`, `FLUX-1.1-pro`, and `FLUX.1-Kontext-pro-edit`.
 
 ### LiteLLM TLS certificates
 

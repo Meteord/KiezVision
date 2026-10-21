@@ -16,11 +16,11 @@ import {
 } from "./maskCropInpaint";
 import { proxyGeminiGenerateContent } from "../lib/api.ts";
 import {
-	proxyLiteLLMImageEdit,
-	proxyLiteLLMImageGeneration,
-	type LiteLLMImageResponse,
+	proxyOpenAIImageEdit,
+	proxyOpenAIImageGeneration,
+	type OpenAIImageResponse,
 } from "../lib/api.ts";
-import type { LiteLLMImageModel } from "./imageModels.ts";
+import type { OpenAIImageModel } from "./imageModels.ts";
 import {
 	loadImageElement,
 	resizeDataUrlToDimensions,
@@ -313,7 +313,7 @@ function extractInlineImageDataUrl(response: GenerateContentResponse): string {
 	return extractImageFromCandidates(response);
 }
 
-function extractLiteLLMImageDataUrl(response: LiteLLMImageResponse): string {
+function extractOpenAIImageDataUrl(response: OpenAIImageResponse): string {
 	const image = response.data?.[0];
 	if (image?.b64_json) return `data:image/png;base64,${image.b64_json}`;
 	if (image?.url) return image.url;
@@ -364,18 +364,18 @@ export const getGroundedPrompt = async (
 export const generateImage = async (
 	prompt: string,
 	highQuality = true,
-	model: LiteLLMImageModel = "gpt-image-1.5",
+	model: OpenAIImageModel = "FLUX.2-pro",
 ): Promise<string> => {
 	// Get grounded details first (only if high quality)
 	const detailedPrompt = await getGroundedPrompt(prompt, highQuality);
 
 	return callWithRetry(async () => {
-		const response = await proxyLiteLLMImageGeneration({
+		const response = await proxyOpenAIImageGeneration({
 			model,
 			prompt: `${detailedPrompt}. Style: Google Street View, wide-angle lens, 2.5m camera height, realistic urban lighting, clear daylight. ${NO_BLURRY_ARTIFACTS_HINT} CRITICAL: Do NOT add any text, labels, watermarks, or signatures to the image.`,
 			...(highQuality && model === "gpt-image-1.5" ? { quality: "high" } : {}),
 		});
-		return extractLiteLLMImageDataUrl(response);
+		return extractOpenAIImageDataUrl(response);
 	});
 };
 
@@ -597,7 +597,7 @@ export interface TransformImageOptions {
 	maskBase64?: string | null;
 	highQuality?: boolean;
 	aspectRatio?: GeminiImageAspectRatio;
-	model?: LiteLLMImageModel;
+	model?: OpenAIImageModel;
 }
 
 export async function transformImage(
@@ -609,7 +609,7 @@ export async function transformImage(
 		maskBase64,
 		highQuality = false,
 		aspectRatio = "16:9",
-		model = "gpt-image-1.5",
+		model = "FLUX.1-Kontext-pro-edit",
 	} = options;
 	const userPrompt = prompt.replace(/"""+/g, '"').trim();
 
@@ -657,8 +657,8 @@ export async function transformImage(
 		? `data:${imagePrepared.mimeType};base64,${imagePrepared.base64}`
 		: imageBase64;
 	return callWithRetry(async () =>
-		extractLiteLLMImageDataUrl(
-			await proxyLiteLLMImageEdit({
+		extractOpenAIImageDataUrl(
+			await proxyOpenAIImageEdit({
 				model,
 				image: editImageData,
 				prompt: parts
@@ -680,6 +680,7 @@ export async function generateMaskedInpaintImage(opts: {
 	instructionText: string;
 	aspectRatio?: GeminiImageAspectRatio;
 	highQuality?: boolean;
+	model?: OpenAIImageModel;
 	seed?: number;
 	temperature?: number;
 }): Promise<string> {
@@ -688,9 +689,9 @@ export async function generateMaskedInpaintImage(opts: {
 	void opts.seed;
 	void opts.temperature;
 	const instruction = buildMaskInstructionFromPrompt(opts.instructionText);
-	return extractLiteLLMImageDataUrl(
-		await proxyLiteLLMImageEdit({
-			model: "azure_ai/FLUX.1-Kontext-pro",
+	return extractOpenAIImageDataUrl(
+		await proxyOpenAIImageEdit({
+			model: opts.model ?? "FLUX.1-Kontext-pro-edit",
 			image: opts.imageDataUrl,
 			mask: opts.maskDataUrl,
 			prompt: instruction,

@@ -105,6 +105,7 @@ async function generateRawPatch(options: {
 			highQuality,
 			seed: ctx.options?.seed,
 			temperature: ctx.options?.modelTemperature,
+			model: ctx.options?.model,
 		});
 	} catch (e) {
 		throw new AreaEditError(

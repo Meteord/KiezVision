@@ -3,11 +3,11 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { loadEnv } from "vite";
 import { generateContentViaServer, type GeminiGenerateBody } from "./gemini.ts";
 import {
-	editImageViaLiteLLM,
-	generateImageViaLiteLLM,
-	type LiteLLMImageEditBody,
-	type LiteLLMImageGenerationBody,
-} from "./litellm.ts";
+	editImageViaOpenAIImagesApi,
+	generateImageViaOpenAIImagesApi,
+	type OpenAIImageEditBody,
+	type OpenAIImageGenerationBody,
+} from "./openaiImages.ts";
 import { fetchMapillaryImageBytes, fetchMapillaryImages } from "./mapillary.ts";
 import {
 	assertAllowedOrigin,
@@ -21,8 +21,8 @@ import {
 } from "./requestGuard.ts";
 import {
 	geminiConfigured,
-	litellmConfigured,
 	mapillaryConfigured,
+	openAIImagesConfigured,
 } from "./secrets.ts";
 
 type ConnectReq = IncomingMessage & { url?: string; method?: string };
@@ -60,7 +60,7 @@ function sendError(res: ConnectRes, error: unknown): void {
 async function handleStatus(res: ConnectRes): Promise<void> {
 	sendJson(res, 200, {
 		gemini: geminiConfigured(),
-		litellm: litellmConfigured(),
+		images: openAIImagesConfigured(),
 		mapillary: mapillaryConfigured(),
 	});
 }
@@ -105,8 +105,8 @@ async function handleImageGeneration(
 	sendJson(
 		res,
 		200,
-		await generateImageViaLiteLLM(
-			JSON.parse(raw) as LiteLLMImageGenerationBody,
+		await generateImageViaOpenAIImagesApi(
+			JSON.parse(raw) as OpenAIImageGenerationBody,
 		),
 	);
 }
@@ -121,7 +121,7 @@ async function handleImageEdit(
 	sendJson(
 		res,
 		200,
-		await editImageViaLiteLLM(JSON.parse(raw) as LiteLLMImageEditBody),
+		await editImageViaOpenAIImagesApi(JSON.parse(raw) as OpenAIImageEditBody),
 	);
 }
 

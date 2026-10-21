@@ -66,7 +66,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 				</button>
 				<div>
 					<h1 className="text-lg sm:text-xl lg:text-2xl font-black tracking-tighter leading-none mb-1 text-eb-50 truncate">
-						MünchenPlant
+						München-Plant
 					</h1>
 					<div className="hidden lg:flex items-center gap-3">
 						<span className="text-xs font-black bg-coral-100 text-eb-900 px-2 py-0.5 whitespace-nowrap">

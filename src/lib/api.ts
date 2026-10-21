@@ -1,5 +1,5 @@
 import type { GenerateContentResponse } from "@google/genai";
-import type { LiteLLMImageModel } from "../services/imageModels.ts";
+import type { OpenAIImageModel } from "../services/imageModels.ts";
 
 async function readErrorMessage(response: Response): Promise<string> {
 	try {
@@ -39,7 +39,7 @@ export async function ensureApiSession(password?: string): Promise<void> {
 
 export async function fetchApiStatus(): Promise<{
 	gemini: boolean;
-	litellm: boolean;
+	images: boolean;
 	mapillary: boolean;
 }> {
 	const response = await fetch("/api/status", apiFetchInit);
@@ -48,7 +48,7 @@ export async function fetchApiStatus(): Promise<{
 	}
 	return (await response.json()) as {
 		gemini: boolean;
-		litellm: boolean;
+		images: boolean;
 		mapillary: boolean;
 	};
 }
@@ -76,14 +76,14 @@ export async function proxyGeminiGenerateContent(params: {
 	return (await response.json()) as GenerateContentResponse;
 }
 
-export type LiteLLMImageResponse = {
+export type OpenAIImageResponse = {
 	data?: Array<{ b64_json?: string | null; url?: string | null }>;
 };
 
-async function proxyLiteLLMImage(
+async function proxyOpenAIImage(
 	path: "/api/images/generations" | "/api/images/edits",
 	params: Record<string, unknown>,
-): Promise<LiteLLMImageResponse> {
+): Promise<OpenAIImageResponse> {
 	const body = JSON.stringify(params);
 	if (body.length > 3_800_000) {
 		throw new Error(
@@ -97,27 +97,27 @@ async function proxyLiteLLMImage(
 		body,
 	});
 	if (!response.ok) throw new Error(await readErrorMessage(response));
-	return (await response.json()) as LiteLLMImageResponse;
+	return (await response.json()) as OpenAIImageResponse;
 }
 
-export function proxyLiteLLMImageGeneration(params: {
-	model: LiteLLMImageModel;
+export function proxyOpenAIImageGeneration(params: {
+	model: OpenAIImageModel;
 	prompt: string;
 	size?: string;
 	quality?: string;
-}): Promise<LiteLLMImageResponse> {
-	return proxyLiteLLMImage("/api/images/generations", params);
+}): Promise<OpenAIImageResponse> {
+	return proxyOpenAIImage("/api/images/generations", params);
 }
 
-export function proxyLiteLLMImageEdit(params: {
-	model: LiteLLMImageModel;
+export function proxyOpenAIImageEdit(params: {
+	model: OpenAIImageModel;
 	prompt: string;
 	image: string;
 	mask?: string;
 	size?: string;
 	quality?: string;
-}): Promise<LiteLLMImageResponse> {
-	return proxyLiteLLMImage("/api/images/edits", params);
+}): Promise<OpenAIImageResponse> {
+	return proxyOpenAIImage("/api/images/edits", params);
 }
 
 export async function proxyMapillaryImages(params: {

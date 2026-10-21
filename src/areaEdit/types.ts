@@ -1,3 +1,5 @@
+import type { OpenAIImageModel } from "../services/imageModels";
+
 /**
  * Public contract for constrained area generation (inpainting-style edits).
  */
@@ -48,6 +50,8 @@ export interface AreaEditGenerateOptions {
 	/** Lower with seed + matching model version improves reproducibility. */
 	modelTemperature?: number;
 	operation?: AreaEditOperation;
+	/** LiteLLM model selected for the masked image-edit request. */
+	model?: OpenAIImageModel;
 	/** Skip post-verify step (tests / debugging only). */
 	skipIntegrityVerify?: boolean;
 	/** Abort after raw model output (no deterministic CPU composite). */
@@ -98,6 +102,7 @@ export interface AreaEditModelProvider {
 		highQuality: boolean;
 		seed?: number;
 		temperature?: number;
+		model?: OpenAIImageModel;
 	}): Promise<string>;
 }
 

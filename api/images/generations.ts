@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
-	generateImageViaLiteLLM,
-	type LiteLLMImageGenerationBody,
-} from "../../server/litellm.ts";
+	generateImageViaOpenAIImagesApi,
+	type OpenAIImageGenerationBody,
+} from "../../server/openaiImages.ts";
 import { readRawBody, sendError, sendJson } from "../../server/httpHelpers.ts";
 import {
 	assertBodySize,
@@ -26,8 +26,8 @@ export default async function handler(
 		sendJson(
 			res,
 			200,
-			await generateImageViaLiteLLM(
-				JSON.parse(raw || "{}") as LiteLLMImageGenerationBody,
+			await generateImageViaOpenAIImagesApi(
+				JSON.parse(raw || "{}") as OpenAIImageGenerationBody,
 			),
 		);
 	} catch (error) {
