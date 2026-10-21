@@ -45,6 +45,7 @@ export interface AppContextValue {
 	language: Language;
 	setLanguage: (language: Language) => void;
 	content: ContentStrings;
+	mapillaryEnabled: boolean;
 	processing: ProcessingState;
 	error: string | null;
 	setError: (error: string | null) => void;
@@ -116,6 +117,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 	});
 	const [error, setError] = useState<string | null>(null);
 	const [, setHasApiKey] = useState(false);
+	const [mapillaryEnabled, setMapillaryEnabled] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [uploadedGallery, setUploadedGallery] = useState<GeneratedImage[]>([]);
 	const [selectedGalleryId, setSelectedGalleryId] = useState<string | null>(
@@ -256,11 +258,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 		const checkKey = async () => {
 			try {
 				const status = await fetchApiStatus();
+				setMapillaryEnabled(status.mapillary);
 				if (status.gemini || status.images) {
 					setHasApiKey(true);
 					return;
 				}
 			} catch {
+				setMapillaryEnabled(false);
 				// Fall through to aistudio / permissive default.
 			}
 			if (window.aistudio) {
@@ -719,6 +723,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 			language,
 			setLanguage,
 			content,
+			mapillaryEnabled,
 			processing,
 			error,
 			setError,
@@ -756,6 +761,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 		[
 			language,
 			content,
+			mapillaryEnabled,
 			processing,
 			error,
 			searchQuery,
