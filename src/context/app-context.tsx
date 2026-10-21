@@ -24,6 +24,7 @@ import { fetchApiStatus } from "../lib/api.ts";
 import { useEditor } from "../hooks/use-editor.ts";
 import { useFocusTrap } from "../hooks/use-focus-trap.ts";
 import { useLibrary } from "../hooks/use-library.ts";
+import { useProjects } from "../hooks/use-projects.ts";
 import { normalizePath } from "../routes/path-utils.ts";
 import { cropDataUrl } from "../services/imageUtils.ts";
 import { loadFullImageDataUrl } from "../services/libraryStorage.ts";
@@ -38,6 +39,7 @@ import { isGeminiQuotaError } from "../services/geminiService.ts";
 import type {
 	GeneratedImage,
 	LibraryEntry,
+	Project,
 	ProcessingState,
 } from "../types.ts";
 
@@ -52,6 +54,9 @@ export interface AppContextValue {
 	searchQuery: string;
 	setSearchQuery: (query: string) => void;
 	library: ReturnType<typeof useLibrary>;
+	projects: ReturnType<typeof useProjects>;
+	activeProject: { project: Project; username: string } | null;
+	startProject: (project: Project, username: string) => void;
 	editor: ReturnType<typeof useEditor>;
 	imageryPickerOpen: boolean;
 	imageryPickerLocation: GeocodeResult | null;
@@ -110,7 +115,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 	const location = useLocation();
 	const lastNormalizedPathRef = useRef<string | null>(null);
 
-	const [language, setLanguage] = useState<Language>("en");
+	const [language, setLanguage] = useState<Language>("de");
 	const content = getContent(language);
 	const [processing, setProcessing] = useState<ProcessingState>({
 		isProcessing: false,
@@ -143,6 +148,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 	const [cameraOpen, setCameraOpen] = useState(false);
 
 	const library = useLibrary({ language, content, setError });
+	const projects = useProjects();
+	const [activeProject, setActiveProject] = useState<{
+		project: Project;
+		username: string;
+	} | null>(null);
 	const editor = useEditor({
 		language,
 		content,
@@ -281,7 +291,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 		const prev = lastNormalizedPathRef.current;
 		lastNormalizedPathRef.current = normalizedPath;
 		if (!prev) return;
-		if (prev === "/edit" && normalizedPath !== "/edit") {
+		if (prev.startsWith("/edit") && !normalizedPath.startsWith("/edit")) {
 			// Confirmed leave already decided to discard — don't bounce back to /edit.
 			if (editor.consumeLeaveGuardBypass()) return;
 			if (editor.hasUnexportedChanges) {
@@ -659,8 +669,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 			}
 			library.setFolderStatus("connected");
 			editor.loadFromLibraryEntry(full, item.prompt, item.timestamp);
+			if (item.projectId && item.username) {
+				const project = projects.projects.find(
+					(candidate) => candidate.id === item.projectId,
+				);
+				if (project) {
+					setActiveProject({ project, username: item.username });
+					navigate(`/edit/${project.id}`);
+				}
+			}
 		},
-		[editor, library, content.folderUnavailable],
+		[editor, library, navigate, projects.projects, content.folderUnavailable],
 	);
 
 	const handleDownloadLibraryEntry = useCallback(
@@ -691,9 +710,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 		const saved = await library.handleSaveToLibrary(
 			editor.currentImage,
 			editor.history[0]?.prompt || "Saved Image",
+			activeProject
+				? {
+						id: activeProject.project.id,
+						name: activeProject.project.name,
+						username: activeProject.username,
+					}
+				: undefined,
 		);
 		if (saved) editor.markImageExported(editor.currentImage);
-	}, [editor, library]);
+	}, [activeProject, editor, library]);
+
+	const startProject = useCallback(
+		(project: Project, username: string) => {
+			setActiveProject({ project, username });
+			editor.loadImageIntoEditor(project.defaultImage, project.name);
+			navigate(`/edit/${project.id}`);
+		},
+		[editor, navigate],
+	);
 
 	const handleDownloadCurrentImage = useCallback(() => {
 		if (!editor.currentImage) return;
@@ -730,6 +765,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 			searchQuery,
 			setSearchQuery,
 			library,
+			projects,
+			activeProject,
+			startProject,
 			editor,
 			imageryPickerOpen,
 			imageryPickerLocation,
@@ -766,6 +804,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 			error,
 			searchQuery,
 			library,
+			projects,
+			activeProject,
+			startProject,
 			editor,
 			imageryPickerOpen,
 			imageryPickerLocation,

@@ -18,6 +18,24 @@ export interface LibraryEntry {
 	// Optional legacy fallback: data URL kept inline for entries created before
 	// the on-disk library existed. When present, on-disk fields may be empty.
 	dataUrl?: string;
+	projectId?: string;
+	username?: string;
+	projectName?: string;
+}
+
+export interface ProjectPreset {
+	id: string;
+	label: string;
+	prompt: string;
+}
+
+export interface Project {
+	id: string;
+	name: string;
+	description: string;
+	defaultImage: string;
+	presets: ProjectPreset[];
+	createdAt: number;
 }
 
 export enum TransformationType {

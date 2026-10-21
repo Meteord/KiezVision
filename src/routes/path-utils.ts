@@ -7,7 +7,7 @@ export function normalizePath(pathname: string): string {
 
 export function pathnameToView(pathname: string): AppView {
 	const path = normalizePath(pathname);
-	if (path === "/edit") return "editor";
+	if (path === "/edit" || path.startsWith("/edit/")) return "editor";
 	if (path === "/library") return "library";
 	if (path === "/image-gallery") return "image-gallery";
 	if (path === "/about") return "about";

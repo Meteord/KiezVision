@@ -13,6 +13,7 @@ export default function EditPage() {
 		editor,
 		handleClearHistory,
 		reopenImageryPicker,
+		activeProject,
 	} = useAppContext();
 
 	if (!editor.originalImage) {
@@ -56,6 +57,7 @@ export default function EditPage() {
 			onReopenImageryPicker={() => void reopenImageryPicker()}
 			imageModel={editor.imageModel}
 			onImageModelChange={editor.setImageModel}
+			presets={activeProject?.project.presets}
 		/>
 	);
 }

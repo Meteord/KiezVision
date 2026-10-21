@@ -10,9 +10,13 @@ import {
 	getRootHandleWithPrompt,
 	isFileSystemAccessSupported,
 	loadThumbnailObjectUrl,
-	saveImageToLibrary,
 	type LibraryFolderStatus,
 } from "../services/libraryStorage.ts";
+import {
+	deleteBrowserLibraryEntry,
+	getBrowserLibrary,
+	saveBrowserLibraryEntry,
+} from "../services/projectStorage.ts";
 
 function parseInitialLibrary(): LibraryEntry[] {
 	const saved = localStorage.getItem("kiezvision_library");
@@ -120,6 +124,20 @@ export function useLibrary({ language, content, setError }: UseLibraryOptions) {
 	}, [library]);
 
 	useEffect(() => {
+		let active = true;
+		void getBrowserLibrary().then((entries) => {
+			if (!active) return;
+			setLibrary((current) => {
+				const ids = new Set(current.map((entry) => entry.id));
+				return [...entries.filter((entry) => !ids.has(entry.id)), ...current];
+			});
+		});
+		return () => {
+			active = false;
+		};
+	}, []);
+
+	useEffect(() => {
 		let cancelled = false;
 		(async () => {
 			const status = await getLibraryFolderStatus();
@@ -222,17 +240,27 @@ export function useLibrary({ language, content, setError }: UseLibraryOptions) {
 	}, [language, setError, content.errorReconnectFolder]);
 
 	const handleSaveToLibrary = useCallback(
-		async (dataUrl: string, prompt: string) => {
+		async (
+			dataUrl: string,
+			prompt: string,
+			project?: { id: string; name: string; username: string },
+		) => {
 			setError(null);
 			try {
-				const ready = await ensureLibraryFolder();
-				if (!ready) return false;
 				const ts = Date.now();
-				const { entry } = await saveImageToLibrary({
-					dataUrl,
+				const entry: LibraryEntry = {
+					id: `${ts}_${Math.random().toString(16).slice(2, 8)}`,
 					prompt,
 					timestamp: ts,
-				});
+					folder: "",
+					filename: "",
+					thumbFilename: "",
+					dataUrl,
+					projectId: project?.id,
+					projectName: project?.name,
+					username: project?.username,
+				};
+				await saveBrowserLibraryEntry(entry);
 				setLibrary((prev) => [entry, ...prev]);
 				alert(
 					language === "en"
@@ -241,15 +269,6 @@ export function useLibrary({ language, content, setError }: UseLibraryOptions) {
 				);
 				return true;
 			} catch (err: unknown) {
-				const message = err instanceof Error ? err.message : String(err);
-				if (message === "NO_LIBRARY_FOLDER") {
-					setError(
-						language === "en"
-							? "Pick a library folder first to save your visions on disk."
-							: "Bitte zuerst einen Galerie-Ordner auswählen, um Visionen auf der Festplatte zu speichern.",
-					);
-					return false;
-				}
 				console.error("Save to library failed:", err);
 				setError(
 					language === "en"
@@ -259,7 +278,7 @@ export function useLibrary({ language, content, setError }: UseLibraryOptions) {
 				return false;
 			}
 		},
-		[ensureLibraryFolder, language, setError],
+		[language, setError],
 	);
 
 	const removeFromLibrary = useCallback(
@@ -273,6 +292,7 @@ export function useLibrary({ language, content, setError }: UseLibraryOptions) {
 				return next;
 			});
 			if (target) {
+				if (target.dataUrl) await deleteBrowserLibraryEntry(id);
 				try {
 					await deleteEntryFiles(target);
 				} catch (err) {

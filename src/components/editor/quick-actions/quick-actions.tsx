@@ -1,6 +1,6 @@
 import React from "react";
-import { Trees, Droplets, Ban, Sun, Armchair, Bike } from "lucide-react";
-import { TransformationType } from "../../../types.ts";
+import { Trees, Droplets, Ban, Sun, Armchair, Bike, Wand2 } from "lucide-react";
+import { TransformationType, type ProjectPreset } from "../../../types.ts";
 
 interface QuickActionsProps {
 	onAction: (prompt: string) => void | Promise<void>;
@@ -8,6 +8,7 @@ interface QuickActionsProps {
 	language?: "en" | "de";
 	/** In Area Edit, presets need a painted mask first — otherwise the run aborts. */
 	presetsBlocked?: boolean;
+	presets?: ProjectPreset[];
 }
 
 const swallowAsync = (p: Promise<void> | void) => {
@@ -21,6 +22,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
 	disabled,
 	language = "en",
 	presetsBlocked = false,
+	presets,
 }) => {
 	const presetLabels = {
 		en: {
@@ -47,6 +49,54 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
 
 	const presetDisabled = disabled || presetsBlocked;
 
+	const defaultActions = [
+		{
+			label: presetLabels.sunny,
+			prompt: TransformationType.SUNNY_DAY,
+			icon: (
+				<Sun className="w-6 h-6 md:w-8 md:h-8 text-amber-400 fill-amber-400/20" />
+			),
+		},
+		{
+			label: presetLabels.nature,
+			prompt: TransformationType.ADD_TREES,
+			icon: (
+				<Trees className="w-6 h-6 md:w-8 md:h-8 text-emerald-500 fill-emerald-500/20" />
+			),
+		},
+		{
+			label: presetLabels.water,
+			prompt: TransformationType.ADD_WATER,
+			icon: (
+				<Droplets className="w-6 h-6 md:w-8 md:h-8 text-sky-500 fill-sky-500/20" />
+			),
+		},
+		{
+			label: presetLabels.noCars,
+			prompt: TransformationType.REMOVE_CARS,
+			icon: <Ban className="w-6 h-6 md:w-8 md:h-8 text-red-500" />,
+		},
+		{
+			label: presetLabels.bench,
+			prompt: TransformationType.ADD_BENCH,
+			icon: (
+				<Armchair className="w-6 h-6 md:w-8 md:h-8 text-amber-800 fill-amber-800/15" />
+			),
+		},
+		{
+			label: presetLabels.bikeRack,
+			prompt: TransformationType.ADD_BIKE_RACK,
+			icon: <Bike className="w-6 h-6 md:w-8 md:h-8 text-slate-600" />,
+		},
+	];
+	const actions = presets
+		? presets.map((preset) => ({
+				label: preset.label,
+				prompt: preset.prompt,
+				icon: <Wand2 className="w-6 h-6 md:w-8 md:h-8 text-tsb" />,
+			}))
+		: defaultActions;
+
 	return (
 		<div className="space-y-3 mt-3 md:mt-4">
 			{presetsBlocked && (
@@ -58,52 +108,15 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
 				</p>
 			)}
 			<div className="grid grid-cols-2 gap-2 md:gap-4">
-				<ActionBtn
-					icon={
-						<Sun className="w-6 h-6 md:w-8 md:h-8 text-amber-400 fill-amber-400/20" />
-					}
-					label={presetLabels.sunny}
-					onClick={() => swallowAsync(onAction(TransformationType.SUNNY_DAY))}
-					disabled={presetDisabled}
-				/>
-				<ActionBtn
-					icon={
-						<Trees className="w-6 h-6 md:w-8 md:h-8 text-emerald-500 fill-emerald-500/20" />
-					}
-					label={presetLabels.nature}
-					onClick={() => swallowAsync(onAction(TransformationType.ADD_TREES))}
-					disabled={presetDisabled}
-				/>
-				<ActionBtn
-					icon={
-						<Droplets className="w-6 h-6 md:w-8 md:h-8 text-sky-500 fill-sky-500/20" />
-					}
-					label={presetLabels.water}
-					onClick={() => swallowAsync(onAction(TransformationType.ADD_WATER))}
-					disabled={presetDisabled}
-				/>
-				<ActionBtn
-					icon={<Ban className="w-6 h-6 md:w-8 md:h-8 text-red-500" />}
-					label={presetLabels.noCars}
-					onClick={() => swallowAsync(onAction(TransformationType.REMOVE_CARS))}
-					disabled={presetDisabled}
-				/>
-				<ActionBtn
-					icon={
-						<Armchair className="w-6 h-6 md:w-8 md:h-8 text-amber-800 fill-amber-800/15" />
-					}
-					label={presetLabels.bench}
-					onClick={() => swallowAsync(onAction(TransformationType.ADD_BENCH))}
-					disabled={presetDisabled}
-				/>
-				<ActionBtn
-					icon={<Bike className="w-6 h-6 md:w-8 md:h-8 text-slate-600" />}
-					label={presetLabels.bikeRack}
-					onClick={() =>
-						swallowAsync(onAction(TransformationType.ADD_BIKE_RACK))
-					}
-					disabled={presetDisabled}
-				/>
+				{actions.map((action) => (
+					<ActionBtn
+						key={`${action.label}-${action.prompt}`}
+						icon={action.icon}
+						label={action.label}
+						onClick={() => swallowAsync(onAction(action.prompt))}
+						disabled={presetDisabled}
+					/>
+				))}
 			</div>
 		</div>
 	);

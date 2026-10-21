@@ -12,6 +12,7 @@ export function AppRoutes() {
 			<Route element={<AppLayout />}>
 				<Route path="/" element={<HomePage />} />
 				<Route path="/edit" element={<EditPage />} />
+				<Route path="/edit/:projectId" element={<EditPage />} />
 				<Route path="/library" element={<LibraryPage />} />
 				<Route path="/image-gallery" element={<ImageGalleryPage />} />
 				<Route path="/about" element={<AboutPage />} />

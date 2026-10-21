@@ -3,7 +3,11 @@ import { Wand2 } from "lucide-react";
 import type { ContentStrings } from "../../content.ts";
 import type { Language } from "../../content.ts";
 import type { EditMode, InpaintCanvasHandle } from "../../hooks/use-editor.ts";
-import type { GeneratedImage, ProcessingState } from "../../types.ts";
+import type {
+	GeneratedImage,
+	ProcessingState,
+	ProjectPreset,
+} from "../../types.ts";
 import type { OpenAIImageModel } from "../../services/imageModels.ts";
 import { BeforeAfterSlider } from "./before-after-slider.tsx";
 import { EditorSourceOverlay } from "./editor-source-overlay.tsx";
@@ -40,6 +44,7 @@ export interface EditorViewProps {
 	onReopenImageryPicker: () => void;
 	imageModel: OpenAIImageModel;
 	onImageModelChange: (model: OpenAIImageModel) => void;
+	presets?: ProjectPreset[];
 }
 
 export const EditorView: React.FC<EditorViewProps> = ({
@@ -68,6 +73,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 	onReopenImageryPicker,
 	imageModel,
 	onImageModelChange,
+	presets,
 }) => (
 	<div className="flex flex-col md:grid md:grid-cols-12 min-h-[calc(100vh-80px)] md:h-[calc(100vh-80px)] md:max-h-[calc(100vh-80px)]">
 		<div className="order-1 md:order-none col-span-12 md:col-span-8 flex flex-col flex-1 min-h-0 w-full md:h-full md:max-h-full bg-white border-r-0 md:border-r-2 border-eb-900">
@@ -153,6 +159,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 						disabled={processing.isProcessing}
 						language={language}
 						presetsBlocked={editMode === "mask" && !maskBase64}
+						presets={presets}
 					/>
 				</div>
 
