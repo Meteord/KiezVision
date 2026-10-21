@@ -1,6 +1,10 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { IncomingMessage } from "node:http";
-import { resolveGeminiApiKey, resolveMapillaryAccessToken } from "./secrets.ts";
+import {
+	resolveGeminiApiKey,
+	resolveLiteLLMApiKey,
+	resolveMapillaryAccessToken,
+} from "./secrets.ts";
 import { nodeHeader } from "./httpHelpers.ts";
 
 const SESSION_COOKIE = "kv_api_session";
@@ -12,10 +16,19 @@ const ALLOWED_GEMINI_MODELS = new Set([
 	"gemini-2.5-flash-image",
 	"gemini-3.1-flash-image-preview",
 ]);
+const LITELLM_IMAGE_MODELS = {
+	generation: new Set([
+		"gpt-image-1.5",
+		"azure_ai/FLUX-1.1-pro",
+		"azure_ai/FLUX.2-pro",
+	]),
+	edit: new Set(["gpt-image-1.5", "azure_ai/FLUX.1-Kontext-pro"]),
+};
 
 function getSessionSecret(): string {
 	const material = [
 		resolveGeminiApiKey(),
+		resolveLiteLLMApiKey(),
 		resolveMapillaryAccessToken(),
 		"kiezvision-api-session",
 	].join("|");
@@ -178,6 +191,18 @@ export function assertAllowedGeminiModel(model: string): void {
 		throw Object.assign(new Error(`Model not allowed: ${model}`), {
 			status: 400,
 		});
+	}
+}
+
+export function assertAllowedLiteLLMModel(
+	model: string,
+	operation: keyof typeof LITELLM_IMAGE_MODELS,
+): void {
+	if (!LITELLM_IMAGE_MODELS[operation].has(model)) {
+		throw Object.assign(
+			new Error(`Model is not available for image ${operation}: ${model}`),
+			{ status: 400 },
+		);
 	}
 }
 

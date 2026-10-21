@@ -256,7 +256,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 		const checkKey = async () => {
 			try {
 				const status = await fetchApiStatus();
-				if (status.gemini) {
+				if (status.gemini || status.litellm) {
 					setHasApiKey(true);
 					return;
 				}

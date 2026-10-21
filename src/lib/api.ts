@@ -1,4 +1,5 @@
 import type { GenerateContentResponse } from "@google/genai";
+import type { LiteLLMImageModel } from "../services/imageModels.ts";
 
 async function readErrorMessage(response: Response): Promise<string> {
 	try {
@@ -38,13 +39,18 @@ export async function ensureApiSession(password?: string): Promise<void> {
 
 export async function fetchApiStatus(): Promise<{
 	gemini: boolean;
+	litellm: boolean;
 	mapillary: boolean;
 }> {
 	const response = await fetch("/api/status", apiFetchInit);
 	if (!response.ok) {
 		throw new Error(await readErrorMessage(response));
 	}
-	return (await response.json()) as { gemini: boolean; mapillary: boolean };
+	return (await response.json()) as {
+		gemini: boolean;
+		litellm: boolean;
+		mapillary: boolean;
+	};
 }
 
 export async function proxyGeminiGenerateContent(params: {
@@ -68,6 +74,50 @@ export async function proxyGeminiGenerateContent(params: {
 		throw new Error(await readErrorMessage(response));
 	}
 	return (await response.json()) as GenerateContentResponse;
+}
+
+export type LiteLLMImageResponse = {
+	data?: Array<{ b64_json?: string | null; url?: string | null }>;
+};
+
+async function proxyLiteLLMImage(
+	path: "/api/images/generations" | "/api/images/edits",
+	params: Record<string, unknown>,
+): Promise<LiteLLMImageResponse> {
+	const body = JSON.stringify(params);
+	if (body.length > 3_800_000) {
+		throw new Error(
+			"Image payload is too large for the API proxy. Use a smaller photo or paint a smaller area.",
+		);
+	}
+	const response = await fetch(path, {
+		...apiFetchInit,
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body,
+	});
+	if (!response.ok) throw new Error(await readErrorMessage(response));
+	return (await response.json()) as LiteLLMImageResponse;
+}
+
+export function proxyLiteLLMImageGeneration(params: {
+	model: LiteLLMImageModel;
+	prompt: string;
+	size?: string;
+	quality?: string;
+}): Promise<LiteLLMImageResponse> {
+	return proxyLiteLLMImage("/api/images/generations", params);
+}
+
+export function proxyLiteLLMImageEdit(params: {
+	model: LiteLLMImageModel;
+	prompt: string;
+	image: string;
+	mask?: string;
+	size?: string;
+	quality?: string;
+}): Promise<LiteLLMImageResponse> {
+	return proxyLiteLLMImage("/api/images/edits", params);
 }
 
 export async function proxyMapillaryImages(params: {

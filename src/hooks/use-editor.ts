@@ -18,6 +18,7 @@ import { buildTransformPrompt } from "../services/presetRules.ts";
 import { runAreaEdit } from "../areaEdit/index.ts";
 import { toDisplayableDataUrl } from "../services/imageUtils.ts";
 import type { GeneratedImage, ProcessingState } from "../types.ts";
+import type { LiteLLMImageModel } from "../services/imageModels.ts";
 
 export type EditMode = "comparison" | "mask";
 
@@ -130,6 +131,8 @@ export function useEditor({
 	const [currentImage, setCurrentImage] = useState<string | null>(null);
 	const [history, setHistory] = useState<GeneratedImage[]>([]);
 	const [editMode, setEditMode] = useState<EditMode>("comparison");
+	const [imageModel, setImageModel] =
+		useState<LiteLLMImageModel>("gpt-image-1.5");
 	const [maskBase64, setMaskBase64] = useState<string | null>(null);
 	const [brushSize, setBrushSize] = useState(40);
 	const [inpaintMountKey, setInpaintMountKey] = useState(0);
@@ -352,6 +355,7 @@ export function useEditor({
 						prompt: finalPrompt,
 						highQuality,
 						aspectRatio,
+						model: imageModel,
 					});
 				}
 
@@ -392,6 +396,7 @@ export function useEditor({
 			currentImage,
 			editMode,
 			highQuality,
+			imageModel,
 			language,
 			maskBase64,
 			originalImage,
@@ -456,6 +461,8 @@ export function useEditor({
 		history,
 		editMode,
 		setEditMode,
+		imageModel,
+		setImageModel,
 		maskBase64,
 		brushSize,
 		setBrushSize,

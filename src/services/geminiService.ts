@@ -16,6 +16,12 @@ import {
 } from "./maskCropInpaint";
 import { proxyGeminiGenerateContent } from "../lib/api.ts";
 import {
+	proxyLiteLLMImageEdit,
+	proxyLiteLLMImageGeneration,
+	type LiteLLMImageResponse,
+} from "../lib/api.ts";
+import type { LiteLLMImageModel } from "./imageModels.ts";
+import {
 	loadImageElement,
 	resizeDataUrlToDimensions,
 	compressImageForApiProxy,
@@ -307,6 +313,13 @@ function extractInlineImageDataUrl(response: GenerateContentResponse): string {
 	return extractImageFromCandidates(response);
 }
 
+function extractLiteLLMImageDataUrl(response: LiteLLMImageResponse): string {
+	const image = response.data?.[0];
+	if (image?.b64_json) return `data:image/png;base64,${image.b64_json}`;
+	if (image?.url) return image.url;
+	throw new Error("No image was returned from LiteLLM.");
+}
+
 /**
  * Uses Gemini 2.5 Flash to get grounded descriptive details about a location.
  */
@@ -351,41 +364,18 @@ export const getGroundedPrompt = async (
 export const generateImage = async (
 	prompt: string,
 	highQuality = true,
+	model: LiteLLMImageModel = "gpt-image-1.5",
 ): Promise<string> => {
 	// Get grounded details first (only if high quality)
 	const detailedPrompt = await getGroundedPrompt(prompt, highQuality);
 
 	return callWithRetry(async () => {
-		const model = highQuality ? IMAGE_MODEL_HQ : IMAGE_MODEL;
-
-		const config: Record<string, unknown> = {
-			responseModalities: [Modality.IMAGE],
-			imageConfig: {
-				aspectRatio: "16:9",
-				...(highQuality ? { imageSize: "1K" as const } : {}),
-			},
-		};
-
-		if (highQuality) {
-			config.tools = [
-				{
-					googleSearch: {
-						searchTypes: {
-							webSearch: {},
-							imageSearch: {},
-						},
-					},
-				},
-			];
-		}
-
-		const response = await proxyGeminiGenerateContent({
+		const response = await proxyLiteLLMImageGeneration({
 			model,
-			contents: `${detailedPrompt}. Style: Google Street View, wide-angle lens, 2.5m camera height, realistic urban lighting, clear daylight. ${NO_BLURRY_ARTIFACTS_HINT} CRITICAL: Do NOT add any text, labels, watermarks, or signatures to the image.`,
-			config,
+			prompt: `${detailedPrompt}. Style: Google Street View, wide-angle lens, 2.5m camera height, realistic urban lighting, clear daylight. ${NO_BLURRY_ARTIFACTS_HINT} CRITICAL: Do NOT add any text, labels, watermarks, or signatures to the image.`,
+			...(highQuality && model === "gpt-image-1.5" ? { quality: "high" } : {}),
 		});
-
-		return extractInlineImageDataUrl(response);
+		return extractLiteLLMImageDataUrl(response);
 	});
 };
 
@@ -607,6 +597,7 @@ export interface TransformImageOptions {
 	maskBase64?: string | null;
 	highQuality?: boolean;
 	aspectRatio?: GeminiImageAspectRatio;
+	model?: LiteLLMImageModel;
 }
 
 export async function transformImage(
@@ -618,6 +609,7 @@ export async function transformImage(
 		maskBase64,
 		highQuality = false,
 		aspectRatio = "16:9",
+		model = "gpt-image-1.5",
 	} = options;
 	const userPrompt = prompt.replace(/"""+/g, '"').trim();
 
@@ -660,51 +652,25 @@ export async function transformImage(
 		},
 	];
 
-	return callWithRetry(async () => {
-		type ImageAttempt = { model: string; imageSize?: "1K" };
-		const attempts: ImageAttempt[] = highQuality
-			? [
-					{ model: IMAGE_MODEL_HQ, imageSize: "1K" },
-					{ model: IMAGE_MODEL_HQ },
-					{ model: IMAGE_MODEL },
-				]
-			: [{ model: IMAGE_MODEL }];
-
-		let lastError = new Error("Transform failed");
-
-		for (let i = 0; i < attempts.length; i++) {
-			const att = attempts[i];
-			if (!att) continue;
-			try {
-				const response = await proxyGeminiGenerateContent({
-					model: att.model,
-					contents: [{ role: "user", parts }],
-					config: {
-						responseModalities: [Modality.IMAGE],
-						imageConfig: {
-							aspectRatio,
-							...(att.imageSize ? { imageSize: att.imageSize } : {}),
-						},
-					},
-				});
-				return extractInlineImageDataUrl(response);
-			} catch (e) {
-				lastError = e instanceof Error ? e : new Error(String(e));
-				const msg = lastError.message;
-				const isLast = i === attempts.length - 1;
-				const retriable =
-					msg.includes("IMAGE_OTHER") ||
-					(msg.includes("No image was returned") && !msg.includes("text only"));
-				if (isLast || !retriable) throw lastError;
-				console.warn(
-					`[transformImage] ${att.model}${att.imageSize ? ` ${att.imageSize}` : ""} failed; retrying…`,
-					msg.slice(0, 140),
-				);
-			}
-		}
-
-		throw lastError;
-	});
+	void aspectRatio;
+	const editImageData = imagePrepared.base64
+		? `data:${imagePrepared.mimeType};base64,${imagePrepared.base64}`
+		: imageBase64;
+	return callWithRetry(async () =>
+		extractLiteLLMImageDataUrl(
+			await proxyLiteLLMImageEdit({
+				model,
+				image: editImageData,
+				prompt: parts
+					.map((part) => ("text" in part ? part.text : ""))
+					.filter(Boolean)
+					.join("\n"),
+				...(highQuality && model === "gpt-image-1.5"
+					? { quality: "high" }
+					: {}),
+			}),
+		),
+	);
 }
 
 /** Used by areaEdit pipeline — wraps transformImage with mask. */
@@ -717,13 +683,17 @@ export async function generateMaskedInpaintImage(opts: {
 	seed?: number;
 	temperature?: number;
 }): Promise<string> {
+	void opts.aspectRatio;
+	void opts.highQuality;
 	void opts.seed;
 	void opts.temperature;
 	const instruction = buildMaskInstructionFromPrompt(opts.instructionText);
-	return runMaskedInpaintGeneration(
-		opts.imageDataUrl,
-		opts.maskDataUrl,
-		instruction,
-		opts.highQuality ?? false,
+	return extractLiteLLMImageDataUrl(
+		await proxyLiteLLMImageEdit({
+			model: "azure_ai/FLUX.1-Kontext-pro",
+			image: opts.imageDataUrl,
+			mask: opts.maskDataUrl,
+			prompt: instruction,
+		}),
 	);
 }

@@ -54,6 +54,8 @@ export default function EditPage() {
 			onSetEraser={() => editor.setIsAreaEditEraser(true)}
 			onClearHistory={handleClearHistory}
 			onReopenImageryPicker={() => void reopenImageryPicker()}
+			imageModel={editor.imageModel}
+			onImageModelChange={editor.setImageModel}
 		/>
 	);
 }

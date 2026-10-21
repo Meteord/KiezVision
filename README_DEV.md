@@ -40,14 +40,29 @@ Open **http://localhost:3000/** in a Chromium-based browser (Chrome, Edge, Brave
 
 Create `.env.local` from [`.env.example`](.env.example):
 
-| Variable                 | Required    | Description                                                       |
-| ------------------------ | ----------- | ----------------------------------------------------------------- |
-| `GEMINI_API_KEY`         | Yes         | Google Gemini API key for image generation and location grounding |
-| `MAPILLARY_ACCESS_TOKEN` | Recommended | Mapillary Graph API token for real street imagery                 |
+| Variable                 | Required    | Description                                                  |
+| ------------------------ | ----------- | ------------------------------------------------------------ |
+| `GEMINI_API_KEY`         | Optional    | Google Gemini API key for location grounding                 |
+| `LITELLM_BASE_URL`       | Yes         | LiteLLM proxy URL, for example `https://litellm.example.com` |
+| `LITELLM_API_KEY`        | Yes         | LiteLLM proxy API key for image generation and editing       |
+| `MAPILLARY_ACCESS_TOKEN` | Recommended | Mapillary Graph API token for real street imagery            |
 
 If `MAPILLARY_ACCESS_TOKEN` is missing, street search cannot load Mapillary candidates and the app will surface an empty picker or error depending on context.
 
 **Important:** Keys stay on the server (`api/` on Vercel, Vite middleware locally). Do not use a `VITE_` prefix for secrets and do not commit `.env` / `.env.local`.
+
+Configure these LiteLLM model aliases in the proxy: `gpt-image-1.5`, `azure_ai/FLUX-1.1-pro`, `azure_ai/FLUX.1-Kontext-pro`, and `azure_ai/FLUX.2-pro`. The application sends full-image and masked edits to `/v1/images/edits`; it sends new-image generation to `/v1/images/generations`.
+
+### LiteLLM TLS certificates
+
+The LiteLLM URL must present a complete certificate chain trusted by Node.js. If your organization uses a private certificate authority or TLS-inspection proxy, obtain its CA certificate as a PEM file and configure it **before** starting Vite:
+
+```powershell
+$env:NODE_EXTRA_CA_CERTS = "C:\path\to\organization-ca.pem"
+npm run dev
+```
+
+Do not use `NODE_TLS_REJECT_UNAUTHORIZED=0`: it disables certificate verification for every HTTPS request in the process. For deployed environments, configure the LiteLLM reverse proxy with a publicly trusted certificate and its intermediate certificates.
 
 ---
 

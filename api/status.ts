@@ -1,6 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { sendError, sendJson } from "../server/httpHelpers.ts";
-import { geminiConfigured, mapillaryConfigured } from "../server/secrets.ts";
+import {
+	geminiConfigured,
+	litellmConfigured,
+	mapillaryConfigured,
+} from "../server/secrets.ts";
 
 export default function handler(
 	req: IncomingMessage,
@@ -18,6 +22,7 @@ export default function handler(
 		}
 		sendJson(res, 200, {
 			gemini: geminiConfigured(),
+			litellm: litellmConfigured(),
 			mapillary: mapillaryConfigured(),
 		});
 	} catch (error) {

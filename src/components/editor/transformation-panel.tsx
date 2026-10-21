@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import { Wand2, Loader2 } from "lucide-react";
+import {
+	imageModelsFor,
+	type ImageOperation,
+	type LiteLLMImageModel,
+} from "../../services/imageModels.ts";
 
 interface TransformationPanelProps {
 	onTransform: (prompt: string) => void | Promise<void>;
@@ -7,6 +12,8 @@ interface TransformationPanelProps {
 	placeholder?: string;
 	isMaskMode?: boolean;
 	language?: "en" | "de";
+	imageModel: LiteLLMImageModel;
+	onImageModelChange: (model: LiteLLMImageModel) => void;
 }
 
 const SUGGESTIONS_EN = [
@@ -51,6 +58,8 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 	placeholder = "Describe how to change the image...",
 	isMaskMode = false,
 	language = "en",
+	imageModel,
+	onImageModelChange,
 }) => {
 	const [prompt, setPrompt] = useState("");
 	const suggestions = language === "en" ? SUGGESTIONS_EN : SUGGESTIONS_DE;
@@ -71,6 +80,8 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 			apply: "Anwenden",
 		},
 	}[language];
+	const operation: ImageOperation = isMaskMode ? "mask-edit" : "edit";
+	const models = imageModelsFor(operation);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -111,6 +122,33 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 				)}
 			</div>
 			<form onSubmit={handleSubmit} className="p-4 flex flex-col gap-4">
+				<div>
+					<label
+						htmlFor="image-model"
+						className="block text-xs font-black mb-2"
+					>
+						{language === "en" ? "Image model" : "Bildmodell"}
+					</label>
+					<select
+						id="image-model"
+						value={
+							models.some((model) => model.id === imageModel)
+								? imageModel
+								: models[0]?.id
+						}
+						onChange={(event) =>
+							onImageModelChange(event.target.value as LiteLLMImageModel)
+						}
+						disabled={isProcessing || models.length < 2}
+						className="w-full h-10 bg-gray-50 border-2 border-eb-900 px-2 text-sm font-bold disabled:opacity-70"
+					>
+						{models.map((model) => (
+							<option key={model.id} value={model.id}>
+								{model.label}
+							</option>
+						))}
+					</select>
+				</div>
 				<label htmlFor="transform-prompt" className="sr-only">
 					{strings.instruction}
 				</label>

@@ -2,6 +2,12 @@ import type { Plugin } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { loadEnv } from "vite";
 import { generateContentViaServer, type GeminiGenerateBody } from "./gemini.ts";
+import {
+	editImageViaLiteLLM,
+	generateImageViaLiteLLM,
+	type LiteLLMImageEditBody,
+	type LiteLLMImageGenerationBody,
+} from "./litellm.ts";
 import { fetchMapillaryImageBytes, fetchMapillaryImages } from "./mapillary.ts";
 import {
 	assertAllowedOrigin,
@@ -13,7 +19,11 @@ import {
 	isSitePasswordRequired,
 	verifySitePassword,
 } from "./requestGuard.ts";
-import { geminiConfigured, mapillaryConfigured } from "./secrets.ts";
+import {
+	geminiConfigured,
+	litellmConfigured,
+	mapillaryConfigured,
+} from "./secrets.ts";
 
 type ConnectReq = IncomingMessage & { url?: string; method?: string };
 type ConnectRes = ServerResponse;
@@ -50,6 +60,7 @@ function sendError(res: ConnectRes, error: unknown): void {
 async function handleStatus(res: ConnectRes): Promise<void> {
 	sendJson(res, 200, {
 		gemini: geminiConfigured(),
+		litellm: litellmConfigured(),
 		mapillary: mapillaryConfigured(),
 	});
 }
@@ -82,6 +93,36 @@ async function handleGemini(req: ConnectReq, res: ConnectRes): Promise<void> {
 	const body = JSON.parse(raw) as GeminiGenerateBody;
 	const result = await generateContentViaServer(body);
 	sendJson(res, 200, result);
+}
+
+async function handleImageGeneration(
+	req: ConnectReq,
+	res: ConnectRes,
+): Promise<void> {
+	assertProtectedApiRequest(req);
+	const raw = (await readRequestBody(req)) || "{}";
+	assertBodySize(Buffer.byteLength(raw, "utf8"));
+	sendJson(
+		res,
+		200,
+		await generateImageViaLiteLLM(
+			JSON.parse(raw) as LiteLLMImageGenerationBody,
+		),
+	);
+}
+
+async function handleImageEdit(
+	req: ConnectReq,
+	res: ConnectRes,
+): Promise<void> {
+	assertProtectedApiRequest(req);
+	const raw = (await readRequestBody(req)) || "{}";
+	assertBodySize(Buffer.byteLength(raw, "utf8"));
+	sendJson(
+		res,
+		200,
+		await editImageViaLiteLLM(JSON.parse(raw) as LiteLLMImageEditBody),
+	);
 }
 
 async function handleMapillaryImages(
@@ -150,6 +191,14 @@ export function apiDevPlugin(mode: string): Plugin {
 						}
 						if (pathOnly === "/api/gemini" && method === "POST") {
 							await handleGemini(req, res);
+							return;
+						}
+						if (pathOnly === "/api/images/generations" && method === "POST") {
+							await handleImageGeneration(req, res);
+							return;
+						}
+						if (pathOnly === "/api/images/edits" && method === "POST") {
+							await handleImageEdit(req, res);
 							return;
 						}
 						if (pathOnly === "/api/mapillary/images" && method === "GET") {
