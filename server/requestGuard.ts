@@ -4,6 +4,7 @@ import {
 	resolveGeminiApiKey,
 	resolveLiteLLMApiKey,
 	resolveMapillaryAccessToken,
+	resolveOpenAIImageModels,
 } from "./secrets.ts";
 import { nodeHeader } from "./httpHelpers.ts";
 
@@ -16,16 +17,6 @@ const ALLOWED_GEMINI_MODELS = new Set([
 	"gemini-2.5-flash-image",
 	"gemini-3.1-flash-image-preview",
 ]);
-const OPENAI_IMAGE_MODELS = {
-	generation: new Set(["gpt-image-1.5", "FLUX-1.1-pro", "FLUX.2-pro"]),
-	edit: new Set([
-		"gpt-image-1.5",
-		"FLUX.2-pro",
-		"FLUX.1-Kontext-pro-edit",
-		"FLUX.2-pro-edit",
-	]),
-};
-
 function getSessionSecret(): string {
 	const material = [
 		resolveGeminiApiKey(),
@@ -197,9 +188,13 @@ export function assertAllowedGeminiModel(model: string): void {
 
 export function assertAllowedOpenAIImageModel(
 	model: string,
-	operation: keyof typeof OPENAI_IMAGE_MODELS,
+	operation: "generation" | "edit" | "mask-edit",
 ): void {
-	if (!OPENAI_IMAGE_MODELS[operation].has(model)) {
+	if (
+		!resolveOpenAIImageModels().some(
+			(config) => config.id === model && config.operations.includes(operation),
+		)
+	) {
 		throw Object.assign(
 			new Error(`Model is not available for image ${operation}: ${model}`),
 			{ status: 400 },

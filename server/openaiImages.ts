@@ -147,7 +147,7 @@ export async function editImageViaOpenAIImagesApi(
 			},
 		);
 	}
-	assertAllowedOpenAIImageModel(body.model, "edit");
+	assertAllowedOpenAIImageModel(body.model, body.mask ? "mask-edit" : "edit");
 	const form = new FormData();
 	form.set("model", body.model);
 	form.set("prompt", body.prompt);

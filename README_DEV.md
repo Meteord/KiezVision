@@ -45,6 +45,7 @@ Create `.env.local` from [`.env.example`](.env.example):
 | `GEMINI_API_KEY`                   | Optional    | Google Gemini API key for location grounding                              |
 | `LITELLM_BASE_URL`                 | Yes         | LiteLLM proxy URL, for example `https://litellm.example.com`              |
 | `LITELLM_API_KEY`                  | Yes         | LiteLLM proxy API key for image generation and editing                    |
+| `VITE_OPENAI_IMAGE_MODELS`         | Yes         | Public JSON list of supported models, labels, and allowed operations      |
 | `LITELLM_INSECURE_SKIP_TLS_VERIFY` | Local only  | Set to `true` only to bypass an untrusted LiteLLM TLS certificate locally |
 | `MAPILLARY_ACCESS_TOKEN`           | Recommended | Mapillary Graph API token for real street imagery                         |
 
@@ -52,7 +53,7 @@ If `MAPILLARY_ACCESS_TOKEN` is missing, street search cannot load Mapillary cand
 
 **Important:** Keys stay on the server (`api/` on Vercel, Vite middleware locally). Do not use a `VITE_` prefix for secrets and do not commit `.env` / `.env.local`.
 
-The application uses the [OpenAI Images API](https://docs.litellm.ai/docs/image_edits) contract: full-image and masked edits go to `/v1/images/edits`, while new-image generation goes to `/v1/images/generations`. Configure the proxy with `FLUX.2-pro`, `FLUX.2-pro-edit`, `gpt-image-1.5`, `FLUX-1.1-pro`, and `FLUX.1-Kontext-pro-edit`.
+The application uses the [OpenAI Images API](https://docs.litellm.ai/docs/image_edits) contract: full-image and masked edits go to `/v1/images/edits`, while new-image generation goes to `/v1/images/generations`. Configure supported models with `VITE_OPENAI_IMAGE_MODELS`; each item has an `id`, a displayed `label`, and `operations` containing `generation`, `edit`, and/or `mask-edit`. This variable is intentionally public and must not contain credentials.
 
 ### LiteLLM TLS certificates
 

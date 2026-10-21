@@ -1,43 +1,40 @@
-export type OpenAIImageModel =
-	| "gpt-image-1.5"
-	| "FLUX-1.1-pro"
-	| "FLUX.1-Kontext-pro-edit"
-	| "FLUX.2-pro"
-	| "FLUX.2-pro-edit";
+export type OpenAIImageModel = string;
 
 export type ImageOperation = "generation" | "edit" | "mask-edit";
 
-export const IMAGE_MODELS: Array<{
+export type ImageModel = {
 	id: OpenAIImageModel;
 	label: string;
 	operations: ImageOperation[];
-}> = [
-	{
-		id: "gpt-image-1.5",
-		label: "GPT Image 1.5",
-		operations: ["generation", "edit"],
-	},
-	{
-		id: "FLUX-1.1-pro",
-		label: "FLUX 1.1 Pro",
-		operations: ["generation"],
-	},
-	{
-		id: "FLUX.1-Kontext-pro-edit",
-		label: "FLUX.1 Kontext Pro",
-		operations: ["edit", "mask-edit"],
-	},
-	{
-		id: "FLUX.2-pro",
-		label: "FLUX.2 Pro",
-		operations: ["generation", "edit"],
-	},
-	{
-		id: "FLUX.2-pro-edit",
-		label: "FLUX.2 Pro Edit",
-		operations: ["edit", "mask-edit"],
-	},
-];
+};
+
+function parseImageModels(value: string | undefined): ImageModel[] {
+	if (!value) return [];
+	try {
+		const models = JSON.parse(value) as unknown;
+		if (!Array.isArray(models)) return [];
+		return models.filter(
+			(model): model is ImageModel =>
+				typeof model === "object" &&
+				model !== null &&
+				typeof (model as ImageModel).id === "string" &&
+				typeof (model as ImageModel).label === "string" &&
+				Array.isArray((model as ImageModel).operations) &&
+				(model as ImageModel).operations.every(
+					(operation) =>
+						operation === "generation" ||
+						operation === "edit" ||
+						operation === "mask-edit",
+				),
+		);
+	} catch {
+		return [];
+	}
+}
+
+export const IMAGE_MODELS = parseImageModels(
+	import.meta.env.VITE_OPENAI_IMAGE_MODELS,
+);
 
 export function imageModelsFor(operation: ImageOperation) {
 	return IMAGE_MODELS.filter((model) => model.operations.includes(operation));
