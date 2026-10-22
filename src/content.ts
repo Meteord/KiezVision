@@ -290,9 +290,8 @@ export const Content = {
 		drawingCanvasRoleDescription: "Zeichenfläche",
 		errorFailedUpload: "Upload konnte nicht verarbeitet werden.",
 		projectCatalogEyebrow: "Lokaler Projektkatalog",
-		projectCatalogTitle: "Gemeinsame Visionen gestalten.",
-		projectCatalogSubtitle:
-			"Wähle ein Projekt, gib deinen Namen an und erkunde die vorgegebenen Straßen-Transformationen.",
+		projectCatalogTitle: "MitDenken, mitreden, mitplanen",
+		projectCatalogSubtitle: "Gestalte München nach Deinen Ideen.",
 		createProject: "Projekt erstellen",
 		close: "Schließen",
 		newProject: "Neues Projekt",

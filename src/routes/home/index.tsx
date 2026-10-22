@@ -136,17 +136,14 @@ export default function HomePage() {
 
 	return (
 		<div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-			<div className="relative overflow-hidden plan-rule-title bg-coral-100 px-5 py-8 sm:px-8 sm:py-12 md:px-12 md:py-16 mb-10 sm:mb-14">
+			<div className="relative overflow-hidden plan-rule-title bg-coral-100 px-5 py-7 sm:px-8 sm:py-10 md:px-12 md:py-12 mb-10 sm:mb-14">
 				<div
 					className="absolute inset-0 plan-grid opacity-50"
 					aria-hidden="true"
 				/>
 				<div className="relative flex flex-wrap items-end justify-between gap-6">
 					<div>
-						<p className="text-xs font-black uppercase tracking-[0.16em] text-coral-500 mb-3">
-							{content.projectCatalogEyebrow}
-						</p>
-						<h2 className="font-display text-5xl sm:text-6xl md:text-8xl font-black tracking-[-0.07em] leading-[0.82] uppercase max-w-3xl">
+						<h2 className="font-display text-5xl sm:text-6xl md:text-7xl font-black tracking-[-0.07em] leading-[0.86] uppercase max-w-5xl">
 							{content.projectCatalogTitle}
 						</h2>
 						<p className="mt-6 max-w-xl text-base sm:text-lg font-bold text-eb-900/75">

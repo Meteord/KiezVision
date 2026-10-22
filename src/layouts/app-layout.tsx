@@ -83,7 +83,7 @@ export const AppLayout: React.FC = () => {
 				<Outlet />
 			</main>
 
-			<SiteFooter language={language} />
+			<SiteFooter />
 
 			<AnimatePresence>
 				{cameraOpen && (
