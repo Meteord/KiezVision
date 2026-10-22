@@ -1,8 +1,58 @@
 import { ArrowLeft, Upload, X } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+	useEffect,
+	useRef,
+	useState,
+	type FormEvent,
+	type RefObject,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppContext } from "../../context/app-context.tsx";
 import { TransformationType, type ProjectPreset } from "../../types.ts";
+
+interface ProjectImagePickerProps {
+	image: string;
+	fileRef: RefObject<HTMLInputElement | null>;
+	onPick: (file?: File) => void;
+	chooseLabel: string;
+	replaceLabel: string;
+	previewLabel: string;
+}
+
+function ProjectImagePicker({
+	image,
+	fileRef,
+	onPick,
+	chooseLabel,
+	replaceLabel,
+	previewLabel,
+}: ProjectImagePickerProps) {
+	return (
+		<div>
+			<input
+				ref={fileRef}
+				type="file"
+				accept="image/*"
+				onChange={(event) => onPick(event.target.files?.[0])}
+				className="hidden"
+			/>
+			<button
+				type="button"
+				onClick={() => fileRef.current?.click()}
+				className="inline-flex items-center gap-2 h-12 px-4 border-2 border-eb-900 bg-coral-100 text-xs font-black"
+			>
+				<Upload className="w-4 h-4" /> {image ? replaceLabel : chooseLabel}
+			</button>
+			{image && (
+				<img
+					src={image}
+					alt={previewLabel}
+					className="mt-3 h-32 w-48 object-cover border-2 border-eb-900"
+				/>
+			)}
+		</div>
+	);
+}
 
 export default function ProjectEditPage() {
 	const { language, content, projects } = useAppContext();
@@ -34,6 +84,7 @@ export default function ProjectEditPage() {
 	const [name, setName] = useState(project?.name ?? "");
 	const [description, setDescription] = useState(project?.description ?? "");
 	const [image, setImage] = useState(project?.defaultImage ?? "");
+	const [previewImage, setPreviewImage] = useState(project?.previewImage ?? "");
 	const [selectedPresetIds, setSelectedPresetIds] = useState(
 		() =>
 			project?.presets
@@ -51,12 +102,14 @@ export default function ProjectEditPage() {
 	const [customPresetLabel, setCustomPresetLabel] = useState("");
 	const [customPresetPrompt, setCustomPresetPrompt] = useState("");
 	const fileRef = useRef<HTMLInputElement>(null);
+	const previewFileRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
 		if (!project) return;
 		setName(project.name);
 		setDescription(project.description);
 		setImage(project.defaultImage);
+		setPreviewImage(project.previewImage ?? "");
 		setSelectedPresetIds(
 			project.presets
 				.filter((preset) =>
@@ -95,6 +148,7 @@ export default function ProjectEditPage() {
 			!name.trim() ||
 			!description.trim() ||
 			!image ||
+			!previewImage ||
 			(!selectedPresetIds.length && !customPresets.length)
 		)
 			return;
@@ -103,6 +157,7 @@ export default function ProjectEditPage() {
 			name: name.trim(),
 			description: description.trim(),
 			defaultImage: image,
+			previewImage,
 			presets: [
 				...defaultPresets.filter((preset) =>
 					selectedPresetIds.includes(preset.id),
@@ -131,6 +186,13 @@ export default function ProjectEditPage() {
 		if (!file) return;
 		const reader = new FileReader();
 		reader.onload = () => setImage(reader.result as string);
+		reader.readAsDataURL(file);
+	};
+
+	const pickPreviewImage = (file?: File) => {
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = () => setPreviewImage(reader.result as string);
 		reader.readAsDataURL(file);
 	};
 
@@ -166,30 +228,22 @@ export default function ProjectEditPage() {
 					placeholder={content.projectDescriptionPlaceholder}
 					className="min-h-24 border-2 border-eb-900 p-4 font-bold"
 				/>
-				<div>
-					<input
-						ref={fileRef}
-						type="file"
-						accept="image/*"
-						onChange={(event) => pickImage(event.target.files?.[0])}
-						className="hidden"
-					/>
-					<button
-						type="button"
-						onClick={() => fileRef.current?.click()}
-						className="inline-flex items-center gap-2 h-12 px-4 border-2 border-eb-900 bg-coral-100 text-xs font-black"
-					>
-						<Upload className="w-4 h-4" />{" "}
-						{image ? content.replaceDefaultImage : content.chooseDefaultImage}
-					</button>
-					{image && (
-						<img
-							src={image}
-							alt={content.projectPreview}
-							className="mt-3 h-32 w-48 object-cover border-2 border-eb-900"
-						/>
-					)}
-				</div>
+				<ProjectImagePicker
+					image={image}
+					fileRef={fileRef}
+					onPick={pickImage}
+					chooseLabel={content.chooseDefaultImage}
+					replaceLabel={content.replaceDefaultImage}
+					previewLabel={content.projectPreview}
+				/>
+				<ProjectImagePicker
+					image={previewImage}
+					fileRef={previewFileRef}
+					onPick={pickPreviewImage}
+					chooseLabel={content.choosePreviewImage}
+					replaceLabel={content.replacePreviewImage}
+					previewLabel={content.projectPreview}
+				/>
 				<fieldset className="border-t-2 border-eb-900 pt-4">
 					<legend className="text-xs font-black">
 						{content.predefinedPresets}
@@ -276,7 +330,9 @@ export default function ProjectEditPage() {
 				<button
 					type="submit"
 					disabled={
-						!image || (!selectedPresetIds.length && !customPresets.length)
+						!image ||
+						!previewImage ||
+						(!selectedPresetIds.length && !customPresets.length)
 					}
 					className="justify-self-start bg-tsb text-eb-50 px-6 h-12 border-2 border-eb-900 text-xs font-black disabled:opacity-50"
 				>

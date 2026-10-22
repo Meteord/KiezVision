@@ -34,6 +34,7 @@ export interface Project {
 	name: string;
 	description: string;
 	defaultImage: string;
+	previewImage?: string;
 	presets: ProjectPreset[];
 	createdAt: number;
 }

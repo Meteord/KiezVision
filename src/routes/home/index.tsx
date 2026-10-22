@@ -33,6 +33,7 @@ export default function HomePage() {
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [image, setImage] = useState("");
+	const [previewImage, setPreviewImage] = useState("");
 	const [selectedPresetIds, setSelectedPresetIds] = useState(
 		defaultPresets.map((preset) => preset.id),
 	);
@@ -40,6 +41,7 @@ export default function HomePage() {
 	const [customPresetLabel, setCustomPresetLabel] = useState("");
 	const [customPresetPrompt, setCustomPresetPrompt] = useState("");
 	const fileRef = useRef<HTMLInputElement>(null);
+	const previewFileRef = useRef<HTMLInputElement>(null);
 
 	const save = async (event: FormEvent) => {
 		event.preventDefault();
@@ -47,6 +49,7 @@ export default function HomePage() {
 			!name.trim() ||
 			!description.trim() ||
 			!image ||
+			!previewImage ||
 			(!selectedPresetIds.length && !customPresets.length)
 		)
 			return;
@@ -55,6 +58,7 @@ export default function HomePage() {
 			name: name.trim(),
 			description: description.trim(),
 			defaultImage: image,
+			previewImage,
 			presets: [
 				...defaultPresets.filter((preset) =>
 					selectedPresetIds.includes(preset.id),
@@ -67,6 +71,7 @@ export default function HomePage() {
 		setName("");
 		setDescription("");
 		setImage("");
+		setPreviewImage("");
 		setSelectedPresetIds(defaultPresets.map((preset) => preset.id));
 		setCustomPresets([]);
 		setCustomPresetLabel("");
@@ -79,6 +84,7 @@ export default function HomePage() {
 		setName("");
 		setDescription("");
 		setImage("");
+		setPreviewImage("");
 		setSelectedPresetIds(defaultPresets.map((preset) => preset.id));
 		setCustomPresets([]);
 		setCustomPresetLabel("");
@@ -103,6 +109,13 @@ export default function HomePage() {
 		if (!file) return;
 		const reader = new FileReader();
 		reader.onload = () => setImage(reader.result as string);
+		reader.readAsDataURL(file);
+	};
+
+	const pickPreviewImage = (file?: File) => {
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = () => setPreviewImage(reader.result as string);
 		reader.readAsDataURL(file);
 	};
 
@@ -174,6 +187,32 @@ export default function HomePage() {
 						{image && (
 							<img
 								src={image}
+								alt={content.projectPreview}
+								className="mt-3 h-32 w-48 object-cover border-2 border-eb-900"
+							/>
+						)}
+					</div>
+					<div>
+						<input
+							ref={previewFileRef}
+							type="file"
+							accept="image/*"
+							onChange={(event) => pickPreviewImage(event.target.files?.[0])}
+							className="hidden"
+						/>
+						<button
+							type="button"
+							onClick={() => previewFileRef.current?.click()}
+							className="inline-flex items-center gap-2 h-12 px-4 border-2 border-eb-900 bg-coral-100 text-xs font-black"
+						>
+							<Upload className="w-4 h-4" />{" "}
+							{previewImage
+								? content.replacePreviewImage
+								: content.choosePreviewImage}
+						</button>
+						{previewImage && (
+							<img
+								src={previewImage}
 								alt={content.projectPreview}
 								className="mt-3 h-32 w-48 object-cover border-2 border-eb-900"
 							/>
@@ -268,7 +307,9 @@ export default function HomePage() {
 						type="submit"
 						className="justify-self-start bg-tsb text-eb-50 px-6 h-12 border-2 border-eb-900 text-xs font-black disabled:opacity-50"
 						disabled={
-							!image || (!selectedPresetIds.length && !customPresets.length)
+							!image ||
+							!previewImage ||
+							(!selectedPresetIds.length && !customPresets.length)
 						}
 					>
 						{content.saveProject}
@@ -305,7 +346,7 @@ export default function HomePage() {
 								}}
 							>
 								<img
-									src={project.defaultImage}
+									src={project.previewImage ?? project.defaultImage}
 									alt=""
 									className="w-full aspect-[4/3] object-cover border-b-4 border-eb-900 group-hover:opacity-80 transition-opacity"
 								/>
