@@ -2,7 +2,7 @@ import React from "react";
 import type { ButtonProps } from "./button-types.tsx";
 
 const baseClasses =
-	"bg-eb-900 text-eb-50 border-2 border-eb-900 font-black transition-all shadow-[4px_4px_0px_0px_rgba(254,68,65,0.35)] hover:shadow-none hover:bg-coral-500 disabled:opacity-50 disabled:cursor-not-allowed";
+	"bg-coral-500 text-eb-50 border-2 border-coral-500 font-black uppercase tracking-[0.08em] transition-colors hover:bg-eb-900 hover:border-eb-900 disabled:opacity-50 disabled:cursor-not-allowed";
 
 export const PrimaryButton: React.FC<ButtonProps> = ({
 	onClick,

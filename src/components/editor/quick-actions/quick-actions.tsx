@@ -107,7 +107,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
 					{presetLabels.presetsBlockedHint}
 				</p>
 			)}
-			<div className="grid grid-cols-2 gap-2 md:gap-4">
+			<div className="grid grid-cols-2 gap-2 md:gap-3">
 				{actions.map((action) => (
 					<ActionBtn
 						key={`${action.label}-${action.prompt}`}
@@ -138,7 +138,7 @@ const ActionBtn: React.FC<ActionBtnProps> = ({
 	<button
 		onClick={onClick}
 		disabled={disabled}
-		className="flex flex-col items-center justify-center h-24 md:h-28 bg-white border-2 border-eb-900 transition-all group disabled:opacity-30 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(32,32,27,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+		className="flex flex-col items-center justify-center h-24 md:h-28 bg-eb-50 border-2 border-eb-900 transition-colors group disabled:opacity-30 disabled:cursor-not-allowed hover:bg-coral-100"
 	>
 		<div className="mb-1 md:mb-2">{icon}</div>
 		<span className="text-[9px] md:text-[10px] font-black text-eb-900 tracking-tight md:tracking-widest text-center leading-tight px-0.5">

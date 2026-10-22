@@ -7,15 +7,15 @@ export default function AboutPage() {
 	const { language, content } = useAppContext();
 
 	return (
-		<div className="max-w-3xl mx-auto px-6 py-12 sm:py-16">
+		<div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-16">
 			<BackToHomeButton
 				navigate={navigate}
 				label={content.backToHome}
 				className="mb-10"
 			/>
 
-			<div className="bg-white border-4 border-eb-900 p-8 sm:p-10 shadow-[12px_12px_0px_0px_rgba(255,207,214,1)]">
-				<h2 className="text-3xl sm:text-4xl font-black tracking-tighter mb-6">
+			<div className="bg-header border-y-4 border-eb-900 p-8 sm:p-10">
+				<h2 className="font-display text-4xl sm:text-6xl font-black tracking-[-0.07em] uppercase mb-8">
 					{content.aboutTitle}
 				</h2>
 				<p className="text-base sm:text-lg font-bold text-eb-900/80 leading-relaxed mb-4">

@@ -33,24 +33,24 @@ export default function LibraryPage() {
 	}
 
 	return (
-		<div className="max-w-screen-2xl mx-auto px-6 sm:px-10 lg:px-16 py-12">
-			<div className="flex flex-wrap items-end justify-between gap-6 mb-12 border-b-4 border-eb-900 pb-8">
+		<div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+			<div className="bg-tsb text-eb-50 border-y-4 border-eb-900 px-5 py-8 sm:px-8 sm:py-10 flex flex-wrap items-end justify-between gap-6 mb-12">
 				<div>
 					<div className="mb-4">
 						<BackToHomeButton navigate={navigate} label={content.backToHome} />
 					</div>
-					<h2 className="text-5xl md:text-6xl font-black tracking-tighter leading-none">
+					<h2 className="font-display text-5xl md:text-7xl font-black tracking-[-0.07em] leading-[0.85] uppercase">
 						{selectedProject
 							? `${content.imageLibrary}: ${selectedProject.name}`
 							: content.imageLibrary}
 					</h2>
-					<p className="mt-3 font-bold text-eb-900/70">
+					<p className="mt-4 font-bold text-eb-50/75">
 						{content.libraryProjectSubtitle}
 					</p>
 				</div>
 			</div>
 			{selectedEntries.length === 0 ? (
-				<div className="bg-white border-4 border-eb-900 p-12 text-center shadow-[12px_12px_0px_0px_rgba(255,207,214,1)]">
+				<div className="bg-coral-100 border-y-4 border-eb-900 p-12 text-center">
 					<Library className="w-10 h-10 mx-auto mb-4" />
 					<h3 className="text-3xl font-black tracking-tighter">
 						{selectedProject
@@ -69,7 +69,7 @@ export default function LibraryPage() {
 					{Array.from(groups.entries()).map(([groupProject, users]) => (
 						<section key={groupProject}>
 							<div className="flex items-center gap-4 mb-7">
-								<h3 className="bg-tsb text-eb-50 px-4 py-2 text-xl font-black">
+								<h3 className="bg-coral-500 text-eb-50 px-4 py-2 text-xl font-black uppercase tracking-wide">
 									{groupProject}
 								</h3>
 								<div className="h-0.5 flex-1 bg-eb-900/10" />

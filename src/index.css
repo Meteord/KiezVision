@@ -23,6 +23,7 @@
 @layer base {
 	body {
 		@apply font-sans bg-eb-50 text-eb-900 m-0;
+		letter-spacing: -0.01em;
 	}
 
 	.font-mono {
@@ -36,13 +37,13 @@
 }
 
 ::-webkit-scrollbar-track {
-	background: #fafaf2;
-	border-left: 2px solid #20201b;
+	background: #fffef8;
+	border-left: 2px solid #171b4d;
 }
 
 ::-webkit-scrollbar-thumb {
-	background: #20201b;
-	border: 2px solid #fafaf2;
+	background: #f02314;
+	border: 2px solid #fffef8;
 }
 
 @keyframes pixelate-in {
@@ -74,6 +75,18 @@
 	background-size: 8px 8px;
 }
 
+.plan-grid {
+	background-image:
+		linear-gradient(to right, rgb(23 27 77 / 12%) 1px, transparent 1px),
+		linear-gradient(to bottom, rgb(23 27 77 / 12%) 1px, transparent 1px);
+	background-size: 2rem 2rem;
+}
+
+.plan-rule-title {
+	border-top: 4px solid #171b4d;
+	border-bottom: 4px solid #171b4d;
+}
+
 .sr-only {
 	position: absolute;
 	width: 1px;
@@ -92,11 +105,11 @@
 	top: 0;
 	z-index: 9999;
 	padding: 0.75rem 1.5rem;
-	background: #20201b;
-	color: #fafaf2;
+	background: #171b4d;
+	color: #fffef8;
 	font-weight: 900;
 	font-size: 0.875rem;
-	border: 2px solid #fe4441;
+	border: 2px solid #f02314;
 	text-decoration: none;
 }
 
@@ -106,13 +119,13 @@
 }
 
 *:focus-visible {
-	outline: 3px solid #fe4441;
+	outline: 3px solid #f02314;
 	outline-offset: 2px;
 }
 
 input:focus-visible,
 textarea:focus-visible {
-	outline: 3px solid #1e3791;
+	outline: 3px solid #2430a0;
 	outline-offset: 0;
 }
 

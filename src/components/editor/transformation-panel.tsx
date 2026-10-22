@@ -100,7 +100,7 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 	};
 
 	return (
-		<div className="bg-white border-2 border-eb-900 p-0">
+		<div className="bg-eb-50 border-2 border-eb-900 p-0">
 			<div className="bg-tsb text-eb-50 px-4 py-2 flex items-center justify-between">
 				<h3
 					className="text-xs font-black flex items-center gap-2"
@@ -140,7 +140,7 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 							onImageModelChange(event.target.value as OpenAIImageModel)
 						}
 						disabled={isProcessing || models.length < 2}
-						className="w-full h-10 bg-gray-50 border-2 border-eb-900 px-2 text-sm font-bold disabled:opacity-70"
+						className="w-full h-10 bg-eb-50 border-2 border-eb-900 px-2 text-sm font-bold disabled:opacity-70"
 					>
 						{models.map((model) => (
 							<option key={model.id} value={model.id}>
@@ -158,7 +158,7 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 					onChange={(e) => setPrompt(e.target.value)}
 					placeholder={placeholder}
 					aria-describedby="transform-instruction-label"
-					className="w-full bg-gray-50 text-eb-900 text-sm p-4 border-2 border-eb-900 focus:bg-white transition-all resize-none h-28 font-bold tracking-tight placeholder:text-eb-900/30"
+					className="w-full bg-header text-eb-900 text-sm p-4 border-2 border-eb-900 focus:bg-eb-50 transition-colors resize-none h-28 font-bold tracking-tight placeholder:text-eb-900/30"
 					disabled={isProcessing}
 				/>
 
@@ -168,7 +168,7 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 							key={s.label}
 							type="button"
 							onClick={() => addSuggestion(s.value)}
-							className="px-3 h-9 bg-white border-2 border-eb-900 text-xs font-black hover:bg-eb-900 hover:text-eb-50 transition-all"
+							className="px-3 h-9 bg-eb-50 border-2 border-eb-900 text-xs font-black uppercase tracking-wide hover:bg-coral-100 transition-colors"
 						>
 							{s.label}
 						</button>
@@ -178,7 +178,7 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 				<button
 					type="submit"
 					disabled={!prompt.trim() || isProcessing}
-					className="w-full bg-eb-900 text-eb-50 h-14 border-2 border-eb-900 font-black hover:bg-coral-100 hover:text-eb-900 shadow-[4px_4px_0px_0px_rgba(32,32,27,0.2)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+					className="w-full bg-coral-500 text-eb-50 h-14 border-2 border-coral-500 font-black uppercase tracking-[0.08em] hover:bg-eb-900 hover:border-eb-900 transition-colors disabled:opacity-50"
 				>
 					{isProcessing ? (
 						<span className="flex items-center justify-center gap-2">

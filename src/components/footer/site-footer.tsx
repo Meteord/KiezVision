@@ -63,12 +63,12 @@ export const SiteFooter: React.FC<SiteFooterProps> = ({ language }) => {
 		: "(opens in new window)";
 
 	return (
-		<footer className="border-t-4 border-eb-900 bg-white mt-auto">
-			<div className="w-full max-w-full min-w-0 px-3 sm:px-4 lg:px-6 py-8 sm:py-10 flex flex-col items-start">
+		<footer className="border-t-4 border-eb-900 bg-header mt-auto">
+			<div className="w-full max-w-screen-2xl mx-auto min-w-0 px-4 sm:px-6 lg:px-8 py-8 sm:py-10 flex flex-col items-start">
 				<div className="w-full flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10 lg:gap-12">
 					<div className="flex flex-col sm:flex-row flex-wrap items-start gap-10 sm:gap-16 lg:gap-20">
 						<div className="flex flex-col items-start">
-							<p className="text-xs font-black uppercase tracking-widest text-eb-900/50 mb-4 text-left">
+							<p className="text-xs font-black uppercase tracking-[0.14em] text-eb-900/60 mb-4 text-left">
 								{isDe ? "Ein Projekt der" : "A project by"}
 							</p>
 							<div className="flex flex-wrap items-center gap-8 sm:gap-12">
@@ -84,7 +84,7 @@ export const SiteFooter: React.FC<SiteFooterProps> = ({ language }) => {
 						</div>
 
 						<div className="flex flex-col items-start">
-							<p className="text-xs font-black uppercase tracking-widest text-eb-900/50 mb-4 text-left">
+							<p className="text-xs font-black uppercase tracking-[0.14em] text-eb-900/60 mb-4 text-left">
 								{isDe ? "Gefördert durch" : "Supported by"}
 							</p>
 							<FooterLogoLink

@@ -75,7 +75,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 	onImageModelChange,
 	presets,
 }) => (
-	<div className="flex flex-col md:grid md:grid-cols-12 min-h-[calc(100vh-80px)] md:h-[calc(100vh-80px)] md:max-h-[calc(100vh-80px)]">
+	<div className="flex flex-col md:grid md:grid-cols-12 min-h-[calc(100vh-80px)] md:h-[calc(100vh-80px)] md:max-h-[calc(100vh-80px)] border-b-4 border-eb-900">
 		<div className="order-1 md:order-none col-span-12 md:col-span-8 flex flex-col flex-1 min-h-0 w-full md:h-full md:max-h-full bg-white border-r-0 md:border-r-2 border-eb-900">
 			<div className="relative flex-1 min-h-[min(42vh,320px)] md:min-h-0 bg-kv-chrome overflow-hidden">
 				{processing.isProcessing && (
@@ -130,9 +130,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
 			/>
 		</div>
 
-		<div className="order-2 md:order-none col-span-12 md:col-span-4 w-full shrink-0 md:h-full md:min-h-0 bg-coral-500 flex flex-col p-4 sm:p-5 md:p-5 lg:p-8 overflow-y-auto custom-scrollbar border-t-2 md:border-t-0 border-eb-900">
-			<div className="mb-6 md:mb-8 lg:mb-10 bg-tsb text-eb-50 p-3 md:p-4 shadow-[8px_8px_0px_0px_rgba(30,55,145,0.35)]">
-				<h2 className="text-lg md:text-xl lg:text-2xl font-black tracking-tighter flex items-center gap-2 md:gap-3">
+		<div className="order-2 md:order-none col-span-12 md:col-span-4 w-full shrink-0 md:h-full md:min-h-0 bg-header flex flex-col p-4 sm:p-5 md:p-5 lg:p-8 overflow-y-auto custom-scrollbar border-t-2 md:border-t-0 border-eb-900">
+			<div className="mb-6 md:mb-8 lg:mb-10 bg-eb-900 text-eb-50 p-3 md:p-4 border-y-4 border-eb-900">
+				<h2 className="font-display text-lg md:text-xl lg:text-2xl font-black tracking-[-0.04em] uppercase flex items-center gap-2 md:gap-3">
 					<Wand2 className="w-5 h-5 md:w-6 md:h-6 shrink-0" /> {content.toolkit}
 				</h2>
 			</div>
@@ -150,8 +150,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
 					/>
 				)}
 
-				<div className="bg-white border-2 border-eb-900 p-4 md:p-6 shadow-[8px_8px_0px_0px_rgba(32,32,27,1)]">
-					<h3 className="text-xs font-black border-b-2 border-eb-900 pb-2 mb-0">
+				<div className="bg-eb-50 border-y-4 border-eb-900 p-4 md:p-6">
+					<h3 className="text-xs font-black uppercase tracking-[0.1em] border-b-2 border-eb-900 pb-2 mb-0">
 						{content.presets}
 					</h3>
 					<QuickActions
@@ -163,7 +163,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 					/>
 				</div>
 
-				<div className="bg-white border-2 border-eb-900 p-4 md:p-6 shadow-[8px_8px_0px_0px_rgba(32,32,27,1)]">
+				<div className="bg-eb-50 border-y-4 border-eb-900 p-4 md:p-6">
 					<TransformationPanel
 						onTransform={onTransform}
 						isProcessing={processing.isProcessing}

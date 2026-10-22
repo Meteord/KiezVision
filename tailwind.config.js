@@ -5,17 +5,17 @@ export default {
 		extend: {
 			colors: {
 				eb: {
-					50: "#FAFAF2",
-					900: "#20201B",
+					50: "#FFFEF8",
+					900: "#171B4D",
 				},
 				coral: {
-					100: "#FFCFD6",
-					500: "#FE4441",
+					100: "#FFDD4A",
+					500: "#F02314",
 				},
-				tsb: "#1E3791",
-				header: "hsl(237, 100%, 91%)",
+				tsb: "#2430A0",
+				header: "#D9DDFF",
 				kv: {
-					chrome: "#EDECE8",
+					chrome: "#E7E9F7",
 				},
 				gray: {
 					750: "#2d3748",
@@ -24,7 +24,8 @@ export default {
 				},
 			},
 			fontFamily: {
-				sans: ['"Host Grotesk"', "system-ui", "sans-serif"],
+				sans: ['"Host Grotesk"', "Arial", "sans-serif"],
+				display: ['"Host Grotesk"', "Arial", "sans-serif"],
 				mono: ['"Host Grotesk"', "ui-monospace", "monospace"],
 			},
 		},

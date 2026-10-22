@@ -28,7 +28,7 @@ export const LibraryEntryCard: React.FC<LibraryEntryCardProps> = ({
 	}, [item, onOpenInEditor]);
 
 	return (
-		<article className="group relative bg-white border-2 border-eb-900 shadow-[12px_12px_0px_0px_rgba(255,207,214,1)] hover:shadow-none transition-all">
+		<article className="group relative bg-eb-50 border-y-4 border-eb-900">
 			<div className="aspect-[4/3] w-full border-b-2 border-eb-900 overflow-hidden bg-gray-100">
 				{thumbUrl ? (
 					<img
@@ -43,7 +43,7 @@ export const LibraryEntryCard: React.FC<LibraryEntryCardProps> = ({
 					/>
 				)}
 			</div>
-			<div className="p-8">
+			<div className="p-6 sm:p-8">
 				<p className="text-xs font-black mb-6 border-l-4 border-eb-900 pl-4 leading-relaxed">
 					{item.prompt}
 				</p>
@@ -51,7 +51,7 @@ export const LibraryEntryCard: React.FC<LibraryEntryCardProps> = ({
 					<button
 						type="button"
 						onClick={open}
-						className="flex-1 bg-eb-900 text-eb-50 h-14 text-xs font-black hover:bg-coral-100 hover:text-eb-900 transition-all flex items-center justify-center gap-2"
+						className="flex-1 bg-coral-500 text-eb-50 h-14 text-xs font-black uppercase tracking-wide hover:bg-eb-900 transition-colors flex items-center justify-center gap-2"
 					>
 						<Wand2 className="w-4 h-4" aria-hidden="true" />{" "}
 						{content.openInEditor}

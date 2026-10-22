@@ -1,4 +1,4 @@
-import { Pencil, Plus, Upload, Wand2 } from "lucide-react";
+import { Pencil, Plus, Upload, Wand2, X } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../context/app-context.tsx";
@@ -41,6 +41,9 @@ export default function HomePage() {
 	const [selectedPresetIds, setSelectedPresetIds] = useState(
 		defaultPresets.map((preset) => preset.id),
 	);
+	const [customPresets, setCustomPresets] = useState<ProjectPreset[]>([]);
+	const [customPresetLabel, setCustomPresetLabel] = useState("");
+	const [customPresetPrompt, setCustomPresetPrompt] = useState("");
 	const fileRef = useRef<HTMLInputElement>(null);
 
 	const save = async (event: FormEvent) => {
@@ -49,7 +52,7 @@ export default function HomePage() {
 			!name.trim() ||
 			!description.trim() ||
 			!image ||
-			!selectedPresetIds.length
+			(!selectedPresetIds.length && !customPresets.length)
 		)
 			return;
 		const project = {
@@ -57,9 +60,12 @@ export default function HomePage() {
 			name: name.trim(),
 			description: description.trim(),
 			defaultImage: image,
-			presets: defaultPresets.filter((preset) =>
-				selectedPresetIds.includes(preset.id),
-			),
+			presets: [
+				...defaultPresets.filter((preset) =>
+					selectedPresetIds.includes(preset.id),
+				),
+				...customPresets,
+			],
 			createdAt: editingProject?.createdAt ?? Date.now(),
 		};
 		if (editingProject) await projects.updateProject(project);
@@ -68,6 +74,9 @@ export default function HomePage() {
 		setDescription("");
 		setImage("");
 		setSelectedPresetIds(defaultPresets.map((preset) => preset.id));
+		setCustomPresets([]);
+		setCustomPresetLabel("");
+		setCustomPresetPrompt("");
 		setEditingProject(null);
 		setCreating(false);
 	};
@@ -77,7 +86,18 @@ export default function HomePage() {
 		setName(project.name);
 		setDescription(project.description);
 		setImage(project.defaultImage);
-		setSelectedPresetIds(project.presets.map((preset) => preset.id));
+		setSelectedPresetIds(
+			project.presets
+				.filter((preset) =>
+					defaultPresets.some((item) => item.id === preset.id),
+				)
+				.map((preset) => preset.id),
+		);
+		setCustomPresets(
+			project.presets.filter(
+				(preset) => !defaultPresets.some((item) => item.id === preset.id),
+			),
+		);
 		setCreating(true);
 	};
 
@@ -88,6 +108,23 @@ export default function HomePage() {
 		setDescription("");
 		setImage("");
 		setSelectedPresetIds(defaultPresets.map((preset) => preset.id));
+		setCustomPresets([]);
+		setCustomPresetLabel("");
+		setCustomPresetPrompt("");
+	};
+
+	const addCustomPreset = () => {
+		if (!customPresetLabel.trim() || !customPresetPrompt.trim()) return;
+		setCustomPresets((presets) => [
+			...presets,
+			{
+				id: crypto.randomUUID(),
+				label: customPresetLabel.trim(),
+				prompt: customPresetPrompt.trim(),
+			},
+		]);
+		setCustomPresetLabel("");
+		setCustomPresetPrompt("");
 	};
 
 	const pickImage = (file?: File) => {
@@ -98,35 +135,41 @@ export default function HomePage() {
 	};
 
 	return (
-		<div className="max-w-screen-xl mx-auto px-6 sm:px-10 py-12 md:py-16">
-			<div className="flex flex-wrap items-end justify-between gap-6 mb-12 border-b-4 border-eb-900 pb-8">
-				<div>
-					<p className="text-xs font-black uppercase tracking-widest text-tsb mb-3">
-						{content.projectCatalogEyebrow}
-					</p>
-					<h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-none">
-						{content.projectCatalogTitle}
-					</h2>
-					<p className="mt-4 max-w-2xl text-lg font-bold text-eb-900/70">
-						{content.projectCatalogSubtitle}
-					</p>
+		<div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+			<div className="relative overflow-hidden plan-rule-title bg-coral-100 px-5 py-8 sm:px-8 sm:py-12 md:px-12 md:py-16 mb-10 sm:mb-14">
+				<div
+					className="absolute inset-0 plan-grid opacity-50"
+					aria-hidden="true"
+				/>
+				<div className="relative flex flex-wrap items-end justify-between gap-6">
+					<div>
+						<p className="text-xs font-black uppercase tracking-[0.16em] text-coral-500 mb-3">
+							{content.projectCatalogEyebrow}
+						</p>
+						<h2 className="font-display text-5xl sm:text-6xl md:text-8xl font-black tracking-[-0.07em] leading-[0.82] uppercase max-w-3xl">
+							{content.projectCatalogTitle}
+						</h2>
+						<p className="mt-6 max-w-xl text-base sm:text-lg font-bold text-eb-900/75">
+							{content.projectCatalogSubtitle}
+						</p>
+					</div>
+					<button
+						type="button"
+						onClick={() => (creating ? closeForm() : setCreating(true))}
+						className="relative inline-flex items-center gap-2 bg-coral-500 text-eb-50 px-6 h-12 border-2 border-coral-500 text-xs font-black uppercase tracking-[0.08em] hover:bg-eb-900 hover:border-eb-900 transition-colors"
+					>
+						<Plus className="w-4 h-4" />{" "}
+						{creating ? content.close : content.createProject}
+					</button>
 				</div>
-				<button
-					type="button"
-					onClick={() => (creating ? closeForm() : setCreating(true))}
-					className="inline-flex items-center gap-2 bg-eb-900 text-eb-50 px-6 h-12 border-2 border-eb-900 text-xs font-black shadow-[4px_4px_0px_0px_rgba(255,207,214,1)] hover:shadow-none"
-				>
-					<Plus className="w-4 h-4" />{" "}
-					{creating ? content.close : content.createProject}
-				</button>
 			</div>
 
 			{creating && (
 				<form
 					onSubmit={(event) => void save(event)}
-					className="mb-12 bg-white border-4 border-eb-900 p-6 md:p-8 shadow-[10px_10px_0px_0px_rgba(255,207,214,1)] grid gap-5"
+					className="mb-12 bg-header border-y-4 border-eb-900 p-6 sm:p-8 md:p-10 grid gap-5"
 				>
-					<h3 className="text-2xl font-black tracking-tighter">
+					<h3 className="font-display text-3xl font-black tracking-[-0.05em] uppercase">
 						{editingProject ? content.editProject : content.newProject}
 					</h3>
 					<input
@@ -193,10 +236,71 @@ export default function HomePage() {
 							))}
 						</div>
 					</fieldset>
+					<fieldset className="border-t-2 border-eb-900 pt-4">
+						<legend className="text-xs font-black">
+							{content.customPresets}
+						</legend>
+						<div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto]">
+							<input
+								value={customPresetLabel}
+								onChange={(event) => setCustomPresetLabel(event.target.value)}
+								placeholder={content.customPresetName}
+								className="h-12 border-2 border-eb-900 px-4 font-bold"
+							/>
+							<input
+								value={customPresetPrompt}
+								onChange={(event) => setCustomPresetPrompt(event.target.value)}
+								placeholder={content.customPresetPrompt}
+								className="h-12 border-2 border-eb-900 px-4 font-bold"
+							/>
+							<button
+								type="button"
+								onClick={addCustomPreset}
+								disabled={
+									!customPresetLabel.trim() || !customPresetPrompt.trim()
+								}
+								className="h-12 border-2 border-eb-900 bg-coral-100 px-4 text-xs font-black disabled:opacity-50"
+							>
+								{content.addPreset}
+							</button>
+						</div>
+						{customPresets.length > 0 && (
+							<div className="mt-3 grid gap-2">
+								{customPresets.map((preset) => (
+									<div
+										key={preset.id}
+										className="flex items-center justify-between gap-4 border-2 border-eb-900 px-4 py-3"
+									>
+										<div>
+											<p className="font-black">{preset.label}</p>
+											<p className="text-sm font-bold text-eb-900/70">
+												{preset.prompt}
+											</p>
+										</div>
+										<button
+											type="button"
+											onClick={() =>
+												setCustomPresets((presets) =>
+													presets.filter((item) => item.id !== preset.id),
+												)
+											}
+											className="shrink-0 p-2 hover:bg-coral-100"
+											aria-label={content.removePreset}
+											title={content.removePreset}
+										>
+											<X className="w-4 h-4" />
+										</button>
+									</div>
+								))}
+							</div>
+						)}
+					</fieldset>
 					<button
 						type="submit"
 						className="justify-self-start bg-tsb text-eb-50 px-6 h-12 border-2 border-eb-900 text-xs font-black disabled:opacity-50"
-						disabled={!image || !selectedPresetIds.length}
+						disabled={
+							!image || (!selectedPresetIds.length && !customPresets.length)
+						}
 					>
 						{editingProject ? content.updateProject : content.saveProject}
 					</button>
@@ -215,11 +319,11 @@ export default function HomePage() {
 					</p>
 				</div>
 			) : (
-				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
 					{projects.projects.map((project) => (
 						<article
 							key={project.id}
-							className="bg-white border-4 border-eb-900 shadow-[8px_8px_0px_0px_rgba(32,32,27,1)]"
+							className="bg-eb-50 border-t-4 border-b-4 border-eb-900"
 						>
 							<button
 								type="button"
@@ -234,10 +338,10 @@ export default function HomePage() {
 								<img
 									src={project.defaultImage}
 									alt=""
-									className="w-full aspect-[4/3] object-cover border-b-2 border-eb-900 group-hover:opacity-80"
+									className="w-full aspect-[4/3] object-cover border-b-4 border-eb-900 group-hover:opacity-80 transition-opacity"
 								/>
-								<div className="p-6">
-									<h3 className="text-2xl font-black tracking-tighter">
+								<div className="p-6 bg-eb-50">
+									<h3 className="font-display text-3xl font-black tracking-[-0.05em] uppercase">
 										{project.name}
 									</h3>
 									<p className="mt-3 text-sm font-bold text-eb-900/70">
@@ -249,7 +353,7 @@ export default function HomePage() {
 									</p>
 								</div>
 							</button>
-							<div className="grid grid-cols-2 border-t-2 border-eb-900">
+							<div className="grid grid-cols-2 border-t-2 border-eb-900 bg-coral-100">
 								<button
 									type="button"
 									onClick={() =>
