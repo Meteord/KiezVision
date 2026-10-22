@@ -2,6 +2,11 @@ import { Pencil, Plus, Upload, Wand2, X } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../context/app-context.tsx";
+import {
+	URBAN_CATEGORIES,
+	URBAN_PRESETS,
+	buildUrbanPresetPrompt,
+} from "../../data/urbanPresets.ts";
 import { TransformationType, type ProjectPreset } from "../../types.ts";
 
 export default function HomePage() {
@@ -29,6 +34,13 @@ export default function HomePage() {
 			prompt: TransformationType.ADD_BIKE_RACK,
 		},
 	];
+	const urbanPresets = URBAN_PRESETS.map((preset) => ({
+		id: `urban-${preset.id}`,
+		label: preset.title[language],
+		prompt: buildUrbanPresetPrompt(preset, "medium"),
+		category: preset.category,
+	}));
+	const projectPresets = [...defaultPresets, ...urbanPresets];
 	const [creating, setCreating] = useState(false);
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
@@ -60,7 +72,7 @@ export default function HomePage() {
 			defaultImage: image,
 			previewImage,
 			presets: [
-				...defaultPresets.filter((preset) =>
+				...projectPresets.filter((preset) =>
 					selectedPresetIds.includes(preset.id),
 				),
 				...customPresets,
@@ -241,6 +253,45 @@ export default function HomePage() {
 									/>{" "}
 									{preset.label}
 								</label>
+							))}
+						</div>
+					</fieldset>
+					<fieldset className="border-t-2 border-eb-900 pt-4">
+						<legend className="text-xs font-black">
+							{language === "en"
+								? "STEP 2040 urban design presets"
+								: "STEP 2040 Stadtgestaltungs-Vorlagen"}
+						</legend>
+						<div className="mt-3 grid gap-4">
+							{URBAN_CATEGORIES.map((category) => (
+								<div key={category.id}>
+									<p className="text-sm font-black">
+										{category.title[language]}
+									</p>
+									<div className="flex flex-wrap gap-3 mt-2">
+										{urbanPresets
+											.filter((preset) => preset.category === category.id)
+											.map((preset) => (
+												<label
+													key={preset.id}
+													className="inline-flex items-center gap-2 text-sm font-bold"
+												>
+													<input
+														type="checkbox"
+														checked={selectedPresetIds.includes(preset.id)}
+														onChange={() =>
+															setSelectedPresetIds((ids) =>
+																ids.includes(preset.id)
+																	? ids.filter((id) => id !== preset.id)
+																	: [...ids, preset.id],
+															)
+														}
+													/>
+													{preset.label}
+												</label>
+											))}
+									</div>
+								</div>
 							))}
 						</div>
 					</fieldset>

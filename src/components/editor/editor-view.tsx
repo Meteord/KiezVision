@@ -11,6 +11,7 @@ import type { OpenAIImageModel } from "../../services/imageModels.ts";
 import { BeforeAfterSlider } from "./before-after-slider.tsx";
 import { EditorSourceOverlay } from "./editor-source-overlay.tsx";
 import { InpaintCanvas } from "./inpaint-canvas.tsx";
+import { UrbanPresetCatalog } from "./quick-actions/urban-preset-catalog.tsx";
 import { TransformationPanel } from "./transformation-panel.tsx";
 import { VersionHistory } from "./version-history.tsx";
 import { ProcessingOverlay } from "../primitives/overlays/processing-overlay.tsx";
@@ -145,6 +146,13 @@ export const EditorView: React.FC<EditorViewProps> = ({
 				compareLabel={content.compare}
 				areaEditLabel={content.areaEdit}
 				saveLabel={content.save}
+			/>
+			<UrbanPresetCatalog
+				onAction={onTransform}
+				disabled={processing.isProcessing}
+				language={language}
+				isMaskMode={editMode === "mask"}
+				hasSelection={canvasRef.current?.hasMaskPaint() ?? false}
 			/>
 		</div>
 	</div>

@@ -8,6 +8,11 @@ import {
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppContext } from "../../context/app-context.tsx";
+import {
+	URBAN_CATEGORIES,
+	URBAN_PRESETS,
+	buildUrbanPresetPrompt,
+} from "../../data/urbanPresets.ts";
 import { TransformationType, type ProjectPreset } from "../../types.ts";
 
 interface ProjectImagePickerProps {
@@ -81,6 +86,13 @@ export default function ProjectEditPage() {
 			prompt: TransformationType.ADD_BIKE_RACK,
 		},
 	];
+	const urbanPresets = URBAN_PRESETS.map((preset) => ({
+		id: `urban-${preset.id}`,
+		label: preset.title[language],
+		prompt: buildUrbanPresetPrompt(preset, "medium"),
+		category: preset.category,
+	}));
+	const projectPresets = [...defaultPresets, ...urbanPresets];
 	const [name, setName] = useState(project?.name ?? "");
 	const [description, setDescription] = useState(project?.description ?? "");
 	const [image, setImage] = useState(project?.defaultImage ?? "");
@@ -89,14 +101,14 @@ export default function ProjectEditPage() {
 		() =>
 			project?.presets
 				.filter((preset) =>
-					defaultPresets.some((item) => item.id === preset.id),
+					projectPresets.some((item) => item.id === preset.id),
 				)
 				.map((preset) => preset.id) ?? [],
 	);
 	const [customPresets, setCustomPresets] = useState<ProjectPreset[]>(
 		() =>
 			project?.presets.filter(
-				(preset) => !defaultPresets.some((item) => item.id === preset.id),
+				(preset) => !projectPresets.some((item) => item.id === preset.id),
 			) ?? [],
 	);
 	const [customPresetLabel, setCustomPresetLabel] = useState("");
@@ -113,13 +125,13 @@ export default function ProjectEditPage() {
 		setSelectedPresetIds(
 			project.presets
 				.filter((preset) =>
-					defaultPresets.some((item) => item.id === preset.id),
+					projectPresets.some((item) => item.id === preset.id),
 				)
 				.map((preset) => preset.id),
 		);
 		setCustomPresets(
 			project.presets.filter(
-				(preset) => !defaultPresets.some((item) => item.id === preset.id),
+				(preset) => !projectPresets.some((item) => item.id === preset.id),
 			),
 		);
 	}, [project]);
@@ -159,7 +171,7 @@ export default function ProjectEditPage() {
 			defaultImage: image,
 			previewImage,
 			presets: [
-				...defaultPresets.filter((preset) =>
+				...projectPresets.filter((preset) =>
 					selectedPresetIds.includes(preset.id),
 				),
 				...customPresets,
@@ -267,6 +279,43 @@ export default function ProjectEditPage() {
 								/>{" "}
 								{preset.label}
 							</label>
+						))}
+					</div>
+				</fieldset>
+				<fieldset className="border-t-2 border-eb-900 pt-4">
+					<legend className="text-xs font-black">
+						{language === "en"
+							? "STEP 2040 urban design presets"
+							: "STEP 2040 Stadtgestaltungs-Vorlagen"}
+					</legend>
+					<div className="mt-3 grid gap-4">
+						{URBAN_CATEGORIES.map((category) => (
+							<div key={category.id}>
+								<p className="text-sm font-black">{category.title[language]}</p>
+								<div className="flex flex-wrap gap-3 mt-2">
+									{urbanPresets
+										.filter((preset) => preset.category === category.id)
+										.map((preset) => (
+											<label
+												key={preset.id}
+												className="inline-flex items-center gap-2 text-sm font-bold"
+											>
+												<input
+													type="checkbox"
+													checked={selectedPresetIds.includes(preset.id)}
+													onChange={() =>
+														setSelectedPresetIds((ids) =>
+															ids.includes(preset.id)
+																? ids.filter((id) => id !== preset.id)
+																: [...ids, preset.id],
+														)
+													}
+												/>
+												{preset.label}
+											</label>
+										))}
+								</div>
+							</div>
 						))}
 					</div>
 				</fieldset>
