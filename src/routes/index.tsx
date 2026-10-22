@@ -5,6 +5,7 @@ import EditPage from "./edit/index.tsx";
 import HomePage from "./home/index.tsx";
 import ImageGalleryPage from "./image-gallery/index.tsx";
 import LibraryPage from "./library/index.tsx";
+import ProjectEditPage from "./project-edit/index.tsx";
 
 export function AppRoutes() {
 	return (
@@ -13,6 +14,7 @@ export function AppRoutes() {
 				<Route path="/" element={<HomePage />} />
 				<Route path="/edit" element={<EditPage />} />
 				<Route path="/edit/:projectId" element={<EditPage />} />
+				<Route path="/projects/:projectId/edit" element={<ProjectEditPage />} />
 				<Route path="/library" element={<LibraryPage />} />
 				<Route path="/image-gallery" element={<ImageGalleryPage />} />
 				<Route path="/about" element={<AboutPage />} />

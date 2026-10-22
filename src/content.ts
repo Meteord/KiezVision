@@ -148,6 +148,7 @@ export const Content = {
 		addPreset: "Add preset",
 		removePreset: "Remove preset",
 		saveProject: "Save project",
+		saveAndGoBack: "Save and go back",
 		loadingProjects: "Loading projects...",
 		firstProjectTitle: "Start your first project",
 		firstProjectSubtitle:
@@ -309,6 +310,7 @@ export const Content = {
 		addPreset: "Vorlage hinzufügen",
 		removePreset: "Vorlage entfernen",
 		saveProject: "Projekt speichern",
+		saveAndGoBack: "Speichern und zurück",
 		loadingProjects: "Projekte werden geladen...",
 		firstProjectTitle: "Erstes Projekt starten",
 		firstProjectSubtitle:

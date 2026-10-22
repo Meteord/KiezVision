@@ -2,11 +2,7 @@ import { Pencil, Plus, Upload, Wand2, X } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../context/app-context.tsx";
-import {
-	TransformationType,
-	type Project,
-	type ProjectPreset,
-} from "../../types.ts";
+import { TransformationType, type ProjectPreset } from "../../types.ts";
 
 export default function HomePage() {
 	const { language, content, projects, startProject } = useAppContext();
@@ -34,7 +30,6 @@ export default function HomePage() {
 		},
 	];
 	const [creating, setCreating] = useState(false);
-	const [editingProject, setEditingProject] = useState<Project | null>(null);
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [image, setImage] = useState("");
@@ -56,7 +51,7 @@ export default function HomePage() {
 		)
 			return;
 		const project = {
-			id: editingProject?.id ?? crypto.randomUUID(),
+			id: crypto.randomUUID(),
 			name: name.trim(),
 			description: description.trim(),
 			defaultImage: image,
@@ -66,10 +61,9 @@ export default function HomePage() {
 				),
 				...customPresets,
 			],
-			createdAt: editingProject?.createdAt ?? Date.now(),
+			createdAt: Date.now(),
 		};
-		if (editingProject) await projects.updateProject(project);
-		else await projects.createProject(project);
+		await projects.createProject(project);
 		setName("");
 		setDescription("");
 		setImage("");
@@ -77,33 +71,11 @@ export default function HomePage() {
 		setCustomPresets([]);
 		setCustomPresetLabel("");
 		setCustomPresetPrompt("");
-		setEditingProject(null);
 		setCreating(false);
-	};
-
-	const openEdit = (project: Project) => {
-		setEditingProject(project);
-		setName(project.name);
-		setDescription(project.description);
-		setImage(project.defaultImage);
-		setSelectedPresetIds(
-			project.presets
-				.filter((preset) =>
-					defaultPresets.some((item) => item.id === preset.id),
-				)
-				.map((preset) => preset.id),
-		);
-		setCustomPresets(
-			project.presets.filter(
-				(preset) => !defaultPresets.some((item) => item.id === preset.id),
-			),
-		);
-		setCreating(true);
 	};
 
 	const closeForm = () => {
 		setCreating(false);
-		setEditingProject(null);
 		setName("");
 		setDescription("");
 		setImage("");
@@ -167,7 +139,7 @@ export default function HomePage() {
 					className="mb-12 bg-header border-y-4 border-eb-900 p-6 sm:p-8 md:p-10 grid gap-5"
 				>
 					<h3 className="font-display text-3xl font-black tracking-[-0.05em] uppercase">
-						{editingProject ? content.editProject : content.newProject}
+						{content.newProject}
 					</h3>
 					<input
 						required
@@ -299,7 +271,7 @@ export default function HomePage() {
 							!image || (!selectedPresetIds.length && !customPresets.length)
 						}
 					>
-						{editingProject ? content.updateProject : content.saveProject}
+						{content.saveProject}
 					</button>
 				</form>
 			)}
@@ -320,11 +292,11 @@ export default function HomePage() {
 					{projects.projects.map((project) => (
 						<article
 							key={project.id}
-							className="bg-eb-50 border-t-4 border-b-4 border-eb-900"
+							className="flex h-full flex-col bg-eb-50 border-t-4 border-b-4 border-eb-900"
 						>
 							<button
 								type="button"
-								className="text-left w-full group"
+								className="flex flex-1 flex-col text-left w-full group"
 								onClick={() => {
 									const username = window
 										.prompt(content.projectUsernamePrompt)
@@ -337,7 +309,7 @@ export default function HomePage() {
 									alt=""
 									className="w-full aspect-[4/3] object-cover border-b-4 border-eb-900 group-hover:opacity-80 transition-opacity"
 								/>
-								<div className="p-6 bg-eb-50">
+								<div className="flex flex-1 flex-col p-6 bg-eb-50">
 									<h3 className="font-display text-3xl font-black tracking-[-0.05em] uppercase">
 										{project.name}
 									</h3>
@@ -366,7 +338,9 @@ export default function HomePage() {
 								</button>
 								<button
 									type="button"
-									onClick={() => openEdit(project)}
+									onClick={() =>
+										navigate(`/projects/${encodeURIComponent(project.id)}/edit`)
+									}
 									className="flex h-12 items-center justify-center hover:bg-coral-100"
 									aria-label={content.editProject}
 									title={content.editProject}
