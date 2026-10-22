@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Wand2, Loader2 } from "lucide-react";
+import { MousePointer2, Paintbrush2, Save } from "lucide-react";
+import type { ProjectPreset } from "../../types.ts";
+import type { EditMode } from "../../hooks/use-editor.ts";
 import {
 	imageModelsFor,
-	type ImageOperation,
 	type OpenAIImageModel,
 } from "../../services/imageModels.ts";
 
@@ -10,10 +11,17 @@ interface TransformationPanelProps {
 	onTransform: (prompt: string) => void | Promise<void>;
 	isProcessing: boolean;
 	placeholder?: string;
-	isMaskMode?: boolean;
 	language?: "en" | "de";
+	presets?: ProjectPreset[];
 	imageModel: OpenAIImageModel;
 	onImageModelChange: (model: OpenAIImageModel) => void;
+	editMode: EditMode;
+	onSetEditModeComparison: () => void;
+	onSetEditModeMask: () => void;
+	onSave: () => void;
+	compareLabel: string;
+	areaEditLabel: string;
+	saveLabel: string;
 }
 
 const SUGGESTIONS_EN = [
@@ -56,32 +64,39 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 	onTransform,
 	isProcessing,
 	placeholder = "Describe how to change the image...",
-	isMaskMode = false,
 	language = "en",
+	presets,
 	imageModel,
 	onImageModelChange,
+	editMode,
+	onSetEditModeComparison,
+	onSetEditModeMask,
+	onSave,
+	compareLabel,
+	areaEditLabel,
+	saveLabel,
 }) => {
 	const [prompt, setPrompt] = useState("");
 	const suggestions = language === "en" ? SUGGESTIONS_EN : SUGGESTIONS_DE;
 
 	const strings = {
 		en: {
-			instruction: "AI Instruction",
-			masked: "(Targeting Mask)",
-			clear: "Clear",
-			synthesizing: "Synthesizing...",
-			apply: "Apply Changes",
+			presets: "Presets",
+			prompt: "Prompt",
+			model: "Image model",
+			generate: "Generate",
+			generating: "Generating...",
 		},
 		de: {
-			instruction: "KI-Anweisung",
-			masked: "(Bereich ausgewählt)",
-			clear: "Leeren",
-			synthesizing: "Synthese...",
-			apply: "Anwenden",
+			presets: "Vorlagen",
+			prompt: "Prompt",
+			model: "Bildmodell",
+			generate: "Generieren",
+			generating: "Wird generiert...",
 		},
 	}[language];
-	const operation: ImageOperation = isMaskMode ? "mask-edit" : "edit";
-	const models = imageModelsFor(operation);
+	const availablePresets = presets ?? suggestions;
+	const models = imageModelsFor("edit");
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -100,94 +115,108 @@ export const TransformationPanel: React.FC<TransformationPanelProps> = ({
 	};
 
 	return (
-		<div className="bg-eb-50 border-2 border-eb-900 p-0">
-			<div className="bg-tsb text-eb-50 px-4 py-2 flex items-center justify-between">
-				<h3
-					className="text-xs font-black flex items-center gap-2"
-					id="transform-instruction-label"
-				>
-					<Wand2 className="w-3 h-3" aria-hidden="true" /> {strings.instruction}{" "}
-					{isMaskMode && (
-						<span className="text-coral-100">{strings.masked}</span>
-					)}
-				</h3>
-				{prompt && (
+		<div className="bg-header">
+			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+				<div className="flex border-2 border-eb-900">
 					<button
 						type="button"
-						onClick={() => setPrompt("")}
-						className="text-xs font-black hover:text-coral-100"
+						onClick={onSetEditModeComparison}
+						aria-pressed={editMode === "comparison"}
+						className={`flex-1 flex items-center justify-center gap-2 h-11 text-xs font-black uppercase tracking-wide transition-colors ${editMode === "comparison" ? "bg-eb-900 text-eb-50" : "bg-header hover:bg-coral-100"}`}
 					>
-						{strings.clear}
+						<MousePointer2 className="w-4 h-4" aria-hidden="true" />
+						{compareLabel}
 					</button>
-				)}
-			</div>
-			<form onSubmit={handleSubmit} className="p-4 flex flex-col gap-4">
-				<div>
-					<label
-						htmlFor="image-model"
-						className="block text-xs font-black mb-2"
+					<button
+						type="button"
+						onClick={onSetEditModeMask}
+						aria-pressed={editMode === "mask"}
+						className={`flex-1 flex items-center justify-center gap-2 h-11 border-l-2 border-eb-900 text-xs font-black uppercase tracking-wide transition-colors ${editMode === "mask" ? "bg-eb-900 text-eb-50" : "bg-header hover:bg-coral-100"}`}
 					>
-						{language === "en" ? "Image model" : "Bildmodell"}
-					</label>
-					<select
-						id="image-model"
-						value={
-							models.some((model) => model.id === imageModel)
-								? imageModel
-								: models[0]?.id
-						}
-						onChange={(event) =>
-							onImageModelChange(event.target.value as OpenAIImageModel)
-						}
-						disabled={isProcessing || models.length < 2}
-						className="w-full h-10 bg-eb-50 border-2 border-eb-900 px-2 text-sm font-bold disabled:opacity-70"
-					>
-						{models.map((model) => (
-							<option key={model.id} value={model.id}>
-								{model.label}
-							</option>
-						))}
-					</select>
+						<Paintbrush2 className="w-4 h-4" aria-hidden="true" />
+						{areaEditLabel}
+					</button>
 				</div>
-				<label htmlFor="transform-prompt" className="sr-only">
-					{strings.instruction}
+				<div className="border-b-2 border-eb-900 pb-4">
+					<p className="mb-3 text-xs font-black uppercase tracking-[0.1em]">
+						{strings.presets}
+					</p>
+					<div className="flex flex-wrap gap-2">
+						{availablePresets.map((preset) => (
+							<button
+								key={`${preset.label}-${preset.prompt ?? preset.value}`}
+								type="button"
+								onClick={() => addSuggestion(preset.prompt ?? preset.value)}
+								disabled={isProcessing}
+								className="px-3 h-9 bg-header border-2 border-eb-900 text-xs font-black uppercase tracking-wide hover:bg-coral-100 transition-colors disabled:opacity-50"
+							>
+								{preset.label}
+							</button>
+						))}
+					</div>
+				</div>
+
+				<label
+					htmlFor="transform-prompt"
+					className="text-xs font-black uppercase tracking-[0.1em]"
+				>
+					{strings.prompt}
 				</label>
 				<textarea
 					id="transform-prompt"
 					value={prompt}
 					onChange={(e) => setPrompt(e.target.value)}
+					onKeyDown={(event) => {
+						if (event.key === "Enter" && !event.shiftKey) {
+							event.preventDefault();
+							event.currentTarget.form?.requestSubmit();
+						}
+					}}
 					placeholder={placeholder}
-					aria-describedby="transform-instruction-label"
-					className="w-full bg-header text-eb-900 text-sm p-4 border-2 border-eb-900 focus:bg-eb-50 transition-colors resize-none h-28 font-bold tracking-tight placeholder:text-eb-900/30"
+					className="w-full h-32 bg-header text-eb-900 text-sm p-4 border-2 border-eb-900 focus:bg-header transition-colors resize-y font-bold tracking-tight placeholder:text-eb-900/30"
 					disabled={isProcessing}
 				/>
 
-				<div className="flex flex-wrap gap-2">
-					{suggestions.map((s) => (
-						<button
-							key={s.label}
-							type="button"
-							onClick={() => addSuggestion(s.value)}
-							className="px-3 h-9 bg-eb-50 border-2 border-eb-900 text-xs font-black uppercase tracking-wide hover:bg-coral-100 transition-colors"
-						>
-							{s.label}
-						</button>
+				<label
+					htmlFor="image-model"
+					className="text-xs font-black uppercase tracking-[0.1em]"
+				>
+					{strings.model}
+				</label>
+				<select
+					id="image-model"
+					value={
+						models.some((model) => model.id === imageModel)
+							? imageModel
+							: models[0]?.id
+					}
+					onChange={(event) =>
+						onImageModelChange(event.target.value as OpenAIImageModel)
+					}
+					disabled={isProcessing || models.length < 2}
+					className="w-full h-11 bg-header border-2 border-eb-900 px-3 text-sm font-bold disabled:opacity-70"
+				>
+					{models.map((model) => (
+						<option key={model.id} value={model.id}>
+							{model.label}
+						</option>
 					))}
-				</div>
+				</select>
 
 				<button
 					type="submit"
 					disabled={!prompt.trim() || isProcessing}
-					className="w-full bg-coral-500 text-eb-50 h-14 border-2 border-coral-500 font-black uppercase tracking-[0.08em] hover:bg-eb-900 hover:border-eb-900 transition-colors disabled:opacity-50"
+					className="w-full h-12 bg-tsb text-eb-50 border-2 border-eb-900 text-xs font-black uppercase tracking-wide hover:bg-eb-900 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					{isProcessing ? (
-						<span className="flex items-center justify-center gap-2">
-							<Loader2 className="w-4 h-4 animate-spin" />{" "}
-							{strings.synthesizing}
-						</span>
-					) : (
-						strings.apply
-					)}
+					{isProcessing ? strings.generating : strings.generate}
+				</button>
+				<button
+					type="button"
+					onClick={onSave}
+					className="w-full h-12 bg-coral-500 text-eb-50 border-2 border-coral-500 text-xs font-black uppercase tracking-wide hover:bg-eb-900 hover:border-eb-900 transition-colors flex items-center justify-center gap-2"
+				>
+					<Save className="w-4 h-4" aria-hidden="true" />
+					{saveLabel}
 				</button>
 			</form>
 		</div>

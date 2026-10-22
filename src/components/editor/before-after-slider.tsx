@@ -17,7 +17,7 @@ interface BeforeAfterSliderProps {
 	ariaLabelSlider?: string;
 }
 
-/** Same sizing as InpaintCanvas — portrait fits in frame; landscape covers. */
+/** Same sizing as InpaintCanvas: always show the complete image. */
 function getStageSize(options: {
 	cw: number;
 	ch: number;
@@ -28,10 +28,7 @@ function getStageSize(options: {
 	if (!cw || !ch || !iw || !ih) {
 		return { width: 0, height: 0 };
 	}
-	const isPortrait = ih > iw;
-	const scale = isPortrait
-		? Math.min(cw / iw, ch / ih)
-		: Math.max(cw / iw, ch / ih);
+	const scale = Math.min(cw / iw, ch / ih);
 	return { width: iw * scale, height: ih * scale };
 }
 
@@ -144,13 +141,13 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
 	return (
 		<div
 			ref={outerRef}
-			className={`absolute inset-0 w-full h-full min-h-0 flex items-center justify-center bg-kv-chrome overflow-hidden select-none cursor-crosshair group ${className}`}
+			className={`absolute inset-0 w-full h-full min-h-0 flex items-center justify-center bg-header overflow-hidden select-none cursor-crosshair group ${className}`}
 			onMouseMove={handleMouseMove}
 			onTouchMove={handleTouchMove}
 		>
 			<div
 				ref={stageRef}
-				className="relative bg-kv-chrome shadow-2xl"
+				className="relative bg-header shadow-2xl"
 				style={{
 					width: stage.width ? `${stage.width}px` : "100%",
 					height: stage.height ? `${stage.height}px` : "100%",
@@ -164,7 +161,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
 				/>
 
 				<div
-					className="absolute inset-0 bg-kv-chrome overflow-hidden"
+					className="absolute inset-0 bg-header overflow-hidden"
 					style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
 				>
 					<img

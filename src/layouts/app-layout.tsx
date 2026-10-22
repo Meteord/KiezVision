@@ -35,7 +35,6 @@ export const AppLayout: React.FC = () => {
 		cameraModalRef,
 		closeCamera,
 		capturePhotoFromVideo,
-		handleSaveToLibrary,
 		handleDownloadCurrentImage,
 	} = useAppContext();
 
@@ -55,15 +54,10 @@ export const AppLayout: React.FC = () => {
 				language={language}
 				content={content}
 				view={view}
-				editMode={editor.editMode}
-				originalImage={editor.originalImage}
 				currentImage={editor.currentImage}
 				onGoHome={() => editor.requestLeaveEditor("/")}
 				onGoAbout={() => editor.requestLeaveEditor("/about")}
 				onGoLibrary={() => editor.requestLeaveEditor("/library")}
-				onSetEditModeComparison={() => editor.setEditMode("comparison")}
-				onSetEditModeMask={editor.enterMaskMode}
-				onSave={() => void handleSaveToLibrary()}
 				onDownload={handleDownloadCurrentImage}
 				onSetLanguage={setLanguage}
 			/>

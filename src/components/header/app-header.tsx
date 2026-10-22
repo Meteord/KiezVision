@@ -1,12 +1,5 @@
 import React from "react";
-import {
-	Download,
-	Info,
-	Library,
-	MousePointer2,
-	Paintbrush2,
-	Save,
-} from "lucide-react";
+import { Download, Info, Library } from "lucide-react";
 import type { ContentStrings } from "../../content.ts";
 import type { Language } from "../../content.ts";
 import { PLANTREFF_LOGO_URL } from "../../constants.ts";
@@ -17,15 +10,10 @@ export interface AppHeaderProps {
 	language: Language;
 	content: ContentStrings;
 	view: AppView;
-	editMode: "comparison" | "mask";
-	originalImage: string | null;
 	currentImage: string | null;
 	onGoHome: () => void;
 	onGoAbout: () => void;
 	onGoLibrary: () => void;
-	onSetEditModeComparison: () => void;
-	onSetEditModeMask: () => void;
-	onSave: () => void;
 	onDownload: () => void;
 	onSetLanguage: (language: Language) => void;
 }
@@ -34,15 +22,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 	language,
 	content,
 	view,
-	editMode,
-	originalImage,
 	currentImage,
 	onGoHome,
 	onGoAbout,
 	onGoLibrary,
-	onSetEditModeComparison,
-	onSetEditModeMask,
-	onSave,
 	onDownload,
 	onSetLanguage,
 }) => (
@@ -64,33 +47,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 					/>
 				</button>
 			</div>
-
-			{view === "editor" && originalImage && (
-				<div
-					role="group"
-					aria-label={language === "en" ? "Edit mode" : "Bearbeitungsmodus"}
-					className="flex items-center gap-1 sm:gap-2 bg-header p-1 border-2 border-eb-900 h-10 lg:h-12 shrink-0"
-				>
-					<button
-						onClick={onSetEditModeComparison}
-						aria-pressed={editMode === "comparison"}
-						className={`flex items-center gap-1.5 px-2.5 sm:px-3 lg:px-6 h-full text-xs font-black uppercase tracking-wide transition-colors ${editMode === "comparison" ? "bg-eb-900 text-eb-50" : "text-eb-900 hover:bg-coral-100"}`}
-					>
-						<MousePointer2 className="w-4 h-4 shrink-0" aria-hidden="true" />
-						<span className="hidden lg:inline">{content.compare}</span>
-						<span className="sr-only lg:hidden">{content.compare}</span>
-					</button>
-					<button
-						onClick={onSetEditModeMask}
-						aria-pressed={editMode === "mask"}
-						className={`flex items-center gap-1.5 px-2.5 sm:px-3 lg:px-6 h-full text-xs font-black uppercase tracking-wide transition-colors ${editMode === "mask" ? "bg-eb-900 text-eb-50" : "text-eb-900 hover:bg-coral-100"}`}
-					>
-						<Paintbrush2 className="w-4 h-4 shrink-0" aria-hidden="true" />
-						<span className="hidden lg:inline">{content.areaEdit}</span>
-						<span className="sr-only lg:hidden">{content.areaEdit}</span>
-					</button>
-				</div>
-			)}
 
 			<div className="flex items-center gap-2 lg:gap-4 h-10 shrink-0">
 				<button
@@ -114,16 +70,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
 				{view === "editor" && currentImage && (
 					<div className="flex items-center gap-1.5 sm:gap-2 h-full">
-						<button
-							onClick={onSave}
-							aria-label={
-								language === "en" ? "Save to library" : "In Galerie speichern"
-							}
-							className="bg-coral-500 text-eb-50 px-2.5 sm:px-3 lg:px-6 h-full border-2 border-coral-500 text-xs font-black uppercase tracking-wide transition-colors hover:bg-eb-900 hover:border-eb-900 flex items-center gap-1.5"
-						>
-							<Save className="w-4 h-4 shrink-0" aria-hidden="true" />
-							<span className="hidden lg:inline">{content.save}</span>
-						</button>
 						<button
 							onClick={onDownload}
 							aria-label={

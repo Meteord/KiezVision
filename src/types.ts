@@ -3,6 +3,8 @@ export interface GeneratedImage {
 	dataUrl: string; // Base64 or URL
 	prompt: string;
 	timestamp: number;
+	model?: string;
+	predecessorId?: string;
 }
 
 // A library entry references images written to a user-picked folder on disk

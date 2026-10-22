@@ -14,6 +14,7 @@ export default function EditPage() {
 		handleClearHistory,
 		reopenImageryPicker,
 		activeProject,
+		handleSaveToLibrary,
 	} = useAppContext();
 
 	if (!editor.originalImage) {
@@ -39,7 +40,6 @@ export default function EditPage() {
 			processing={processing}
 			brushSize={editor.brushSize}
 			isAreaEditEraser={editor.isAreaEditEraser}
-			maskBase64={editor.maskBase64}
 			inpaintMountKey={editor.inpaintMountKey}
 			imageSource={editor.imageSource}
 			locationLabel={
@@ -50,14 +50,14 @@ export default function EditPage() {
 			onOverlayChange={editor.handleOverlayChange}
 			onTransform={editor.handleTransform}
 			onSelectVersion={editor.setCurrentImage}
-			onBrushSizeChange={editor.setBrushSize}
-			onSetBrush={() => editor.setIsAreaEditEraser(false)}
-			onSetEraser={() => editor.setIsAreaEditEraser(true)}
 			onClearHistory={handleClearHistory}
 			onReopenImageryPicker={() => void reopenImageryPicker()}
+			presets={activeProject?.project.presets}
 			imageModel={editor.imageModel}
 			onImageModelChange={editor.setImageModel}
-			presets={activeProject?.project.presets}
+			onSetEditModeComparison={() => editor.setEditMode("comparison")}
+			onSetEditModeMask={editor.enterMaskMode}
+			onSave={() => void handleSaveToLibrary()}
 		/>
 	);
 }

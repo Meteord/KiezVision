@@ -333,11 +333,8 @@ export const InpaintCanvas = forwardRef<
 				return { width: "100%", height: "100%" };
 			}
 
-			// Portrait: fit entire image in frame; landscape: cover (fill edge-to-edge)
-			const isPortrait = ih > iw;
-			const scale = isPortrait
-				? Math.min(cw / iw, ch / ih)
-				: Math.max(cw / iw, ch / ih);
+			// Keep the entire source visible so edits can be placed anywhere on the image.
+			const scale = Math.min(cw / iw, ch / ih);
 			return {
 				width: `${iw * scale}px`,
 				height: `${ih * scale}px`,
@@ -358,7 +355,7 @@ export const InpaintCanvas = forwardRef<
 						? "inpaint-image-desc inpaint-tool-status"
 						: "inpaint-tool-status"
 				}
-				className="absolute inset-0 w-full h-full min-h-0 bg-kv-chrome flex items-center justify-center overflow-hidden"
+				className="absolute inset-0 w-full h-full min-h-0 bg-header flex items-center justify-center overflow-hidden"
 				onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
 				onMouseEnter={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
 				onMouseLeave={() => setMousePos(null)}

@@ -350,12 +350,14 @@ export function useEditor({
 				if (editMode === "mask" && !maskForRun) return;
 
 				let finalImageData: string;
+				let modelUsed: OpenAIImageModel;
 				if (maskForRun) {
 					const maskModel = imageModelsFor("mask-edit").some(
 						(model) => model.id === imageModel,
 					)
 						? imageModel
 						: "FLUX.1-Kontext-pro-edit";
+					modelUsed = maskModel;
 					finalImageData = await runMaskedAreaEdit({
 						imageForRun,
 						maskForRun,
@@ -367,6 +369,7 @@ export function useEditor({
 					});
 					if (!finalImageData) return;
 				} else {
+					modelUsed = imageModel;
 					const aspectRatio = await getBestAspectRatio(imageForRun);
 					const finalPrompt = buildTransformPrompt(prompt, { editMode });
 					finalImageData = await transformImage({
@@ -379,11 +382,16 @@ export function useEditor({
 				}
 
 				const label = editMode === "mask" ? "Area" : "Full";
+				const predecessorId = history.find(
+					(image) => image.dataUrl === currentImage,
+				)?.id;
 				const newImageEntry: GeneratedImage = {
 					id: Date.now().toString(),
 					dataUrl: finalImageData,
 					prompt: editMode !== "comparison" ? `${label}: ${prompt}` : prompt,
 					timestamp: Date.now(),
+					model: modelUsed,
+					predecessorId,
 				};
 
 				setHistory((prev) => [newImageEntry, ...prev]);
@@ -416,6 +424,7 @@ export function useEditor({
 			editMode,
 			highQuality,
 			imageModel,
+			history,
 			language,
 			maskBase64,
 			originalImage,
