@@ -19,7 +19,7 @@ export const BERLIN_DISTRICTS = [
 	"Reinickendorf",
 ] as const;
 
-export const KIEZVISION_LOGO_URL = "/kiezvision_logo.png";
+export const PLANTREFF_LOGO_URL = "/muenchenplant_logo.png";
 
 export const DEFAULT_IMAGERY_SEARCH_RADIUS_M = 120;
 

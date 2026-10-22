@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import type { ContentStrings } from "../../content.ts";
 import type { Language } from "../../content.ts";
-import { KIEZVISION_LOGO_URL } from "../../constants.ts";
+import { PLANTREFF_LOGO_URL } from "../../constants.ts";
 
 export type AppView = "home" | "editor" | "library" | "image-gallery" | "about";
 
@@ -46,7 +46,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 	onDownload,
 	onSetLanguage,
 }) => (
-	<header className="border-b-4 border-eb-900 bg-eb-50 sticky top-0 z-50 max-w-full overflow-x-hidden">
+	<header className="border-b-4 border-eb-900 bg-[#2e475f] sticky top-0 z-50 max-w-full overflow-x-hidden">
 		<nav
 			aria-label={language === "en" ? "Main navigation" : "Hauptnavigation"}
 			className="w-full max-w-screen-2xl mx-auto min-w-0 px-3 sm:px-5 lg:px-8 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-3 lg:gap-4"
@@ -55,25 +55,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 				<button
 					onClick={onGoHome}
 					aria-label={language === "en" ? "Go to homepage" : "Zur Startseite"}
-					className="bg-coral-500 p-0 h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center border-2 border-eb-900 hover:bg-coral-100 transition-colors overflow-hidden"
+					className="bg-[#2e475f] px-1 h-10 w-32 sm:h-12 sm:w-40 flex items-center justify-center hover:bg-coral-100 transition-colors"
 				>
 					<img
-						src={KIEZVISION_LOGO_URL}
-						className="w-full h-full object-cover"
-						alt=""
-						aria-hidden="true"
+						src={PLANTREFF_LOGO_URL}
+						className="w-full h-full object-contain"
+						alt="Plantreff München"
 					/>
 				</button>
-				<div>
-					<h1 className="font-display text-lg sm:text-xl lg:text-2xl font-black tracking-[-0.07em] leading-none mb-1 text-eb-900 truncate uppercase">
-						KiezVision
-					</h1>
-					<div className="hidden lg:flex items-center gap-3">
-						<span className="text-[10px] font-black uppercase tracking-[0.12em] text-eb-900/70 whitespace-nowrap">
-							{content.tagline}
-						</span>
-					</div>
-				</div>
 			</div>
 
 			{view === "editor" && originalImage && (
